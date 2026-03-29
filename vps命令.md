@@ -1,11 +1,10 @@
-### kejilion
-```
-bash <(curl -sL kejilion.sh)
-```
-
 ### DD12
 ```
 (curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O reinstall.sh https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) && bash reinstall.sh debian12 --ssh-port 22 --password reboot && reboot
+```
+### kejilion
+```
+bash <(curl -sL kejilion.sh)
 ```
 ### 永久禁用ipv6
 ```
@@ -32,4 +31,8 @@ else
 fi
 EOF
 } >> ~/.bashrc && source ~/.bashrc
+```
+### 修改Hostname
+```
+hostnamectl set-hostname name
 ```
