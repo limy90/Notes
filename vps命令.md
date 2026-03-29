@@ -1,7 +1,3 @@
-### BT面板
-```
-(curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O reinstall.sh https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) && bash reinstall.sh debian12 --ssh-port 22 --password reboot && reboot
-```
 ### kejilion
 ```
 bash <(curl -sL kejilion.sh)
@@ -26,7 +22,6 @@ sysctl -w net.ipv6.conf.all.disable_ipv6=1
 ```
 rm /etc/localtime && ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 ```
-
 ### 更改用户名颜色
 ```
 { cat <<'EOF'
@@ -37,8 +32,4 @@ else
 fi
 EOF
 } >> ~/.bashrc && source ~/.bashrc
-```
-### [DNS分流](https://app.alice.ws/streaming/console)
-```
-wget https://raw.githubusercontent.com/Jimmyzxk/DNS-Alice-Unlock/refs/heads/main/dns-unlock.sh && bash dns-unlock.sh
 ```
