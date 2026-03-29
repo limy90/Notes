@@ -6,6 +6,10 @@
 ```
 bash <(curl -sL kejilion.sh)
 ```
+### 临时关闭ipv6   重启恢复
+``` 
+sysctl -w net.ipv6.conf.all.disable_ipv6=1
+```
 ### 永久禁用ipv6
 ```
 sudo vim /etc/sysctl.conf
@@ -13,9 +17,9 @@ net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
 sudo sysctl -p
 ```
-### 临时关闭ipv6   重启恢复
-``` 
-sysctl -w net.ipv6.conf.all.disable_ipv6=1
+### 修改Hostname
+```
+hostnamectl set-hostname name
 ```
 ### 时区改为上海
 ```
@@ -31,8 +35,4 @@ else
 fi
 EOF
 } >> ~/.bashrc && source ~/.bashrc
-```
-### 修改Hostname
-```
-hostnamectl set-hostname name
 ```
