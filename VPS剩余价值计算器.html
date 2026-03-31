@@ -6,7 +6,6 @@
     <title>VPS剩余价值计算器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
         body { background: #eef2f7; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
@@ -61,12 +60,6 @@ input::-webkit-calendar-picker-indicator {
                     <h1 class="text-base font-black text-gray-800">VPS 剩余价值计算器</h1>
                     <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">MASTER'S EXCLUSIVE TOOL 喵</p>
                 </div>
-            </div>
-            <div class="grid grid-cols-2 sm:flex sm:items-center gap-x-6 gap-y-1 text-[11px] text-gray-400 font-bold">
-                <div><i class="fas fa-eye w-4 text-center"></i> 浏览次数 <span id="busuanzi_value_site_pv">--</span></div>
-                <div><i class="fas fa-user w-4 text-center"></i> 访客人数 <span id="busuanzi_value_site_uv">--</span></div>
-                <div class="text-[#00BFA5]"><i class="fas fa-calendar-day w-4 text-center"></i> 今日计算 <span id="todayCount">--</span></div>
-                <div class="text-orange-400"><i class="fas fa-fire w-4 text-center"></i> 累计计算 <span id="totalCount">--</span></div>
             </div>
         </div>
 
@@ -227,8 +220,6 @@ input::-webkit-calendar-picker-indicator {
     </div>
 
     <script>
-        const API_BASE = 'https://vps-calc-24228-default-rtdb.firebaseio.com';
-        
         let cycleDays = 365, isDateTime = false, lastInput = 'actualPaid', toastTimer = null;
         let rates = { USD:7.23, EUR:7.82, GBP:9.12, JPY:0.047, HKD:0.92, TWD:0.23, KRW:0.005, SGD:5.38, AUD:4.75, CAD:5.32, CNY:1 };
         
@@ -270,37 +261,12 @@ input::-webkit-calendar-picker-indicator {
                 badge.classList.remove('hidden');
             } catch(e) {
                 console.error('汇率获取失败:', e);
-
-  const badge = getEl('rateStatus');
-  badge.textContent = '汇率获取失败，使用默认汇率';
-  badge.classList.remove('hidden');
+                const badge = getEl('rateStatus');
+                badge.textContent = '汇率获取失败，使用默认汇率';
+                badge.classList.remove('hidden');
             }
             renderRateGrid();
             calculate();
-        }
-
-        async function updateCounts(isAction = false) {
-            const today = getLocalISO(new Date(), false).replace(/-/g,'');
-            const ts = new Date().getTime(); 
-            try {
-                let dRes = await fetch(`${API_BASE}/dailyCalc/${today}.json?_=${ts}`);
-                let tRes = await fetch(`${API_BASE}/calcCount.json?_=${ts}`);
-                
-                let dCount = parseInt(await dRes.json()) || 0;
-                let tCount = parseInt(await tRes.json()) || 0;
-
-                if(isAction) {
-                    dCount += 1; tCount += 1;
-                    await fetch(`${API_BASE}/dailyCalc/${today}.json`, { 
-                        method:'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dCount) 
-                    });
-                    await fetch(`${API_BASE}/calcCount.json`, { 
-                        method:'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tCount) 
-                    });
-                }
-                getEl('todayCount').innerText = dCount;
-                getEl('totalCount').innerText = tCount;
-            } catch(e) {}
         }
 
         function calculate() {
@@ -527,8 +493,6 @@ input::-webkit-calendar-picker-indicator {
                 opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
                 dd.appendChild(opt);
             });
-
-            updateCounts();
         };
 
         getEl('pushCurrBtn').onclick = (e) => { e.stopPropagation(); getEl('pushCurrDropdown').classList.toggle('open'); };
@@ -580,7 +544,7 @@ input::-webkit-calendar-picker-indicator {
                 }
             }
             const text = `【VPS 剩余价值详情】\n剩余价值: ${getEl('resCNYBig').innerText}\n有效期: ${getEl('remainingDays').innerText}\n实付卖家: ${getEl('resActual').innerText}${midText}\n综合日均: ${getEl('dayActual').innerText}\n── by MISTAKECCC`;
-            navigator.clipboard.writeText(text); showToast('详情已复制，今日计算+1喵'); updateCounts(true);
+            navigator.clipboard.writeText(text); showToast('详情已复制');
         };
         
         getEl('shareBtn').onclick = () => { 
@@ -597,7 +561,7 @@ input::-webkit-calendar-picker-indicator {
             if(getEl('useMiddleman').checked) p.set('useMiddleman', '1');
             const shareUrl = window.location.origin + window.location.pathname + '?' + p.toString();
             navigator.clipboard.writeText(shareUrl); 
-            showToast('状态专属链接已生成并复制喵'); updateCounts(true); 
+            showToast('状态专属链接已生成并复制'); 
         };
         
         getEl('resetBtn').onclick = () => { localStorage.removeItem('vps_config'); window.location.href = window.location.origin + window.location.pathname; };
