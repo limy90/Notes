@@ -15,7 +15,6 @@
         .field-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px; }
         .field-input { width: 100%; padding: 11px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all .15s; }
         .field-input:focus { border-color: #00BFA5; background: white; }
-        .core-input { font-size: 18px !important; font-weight: 900 !important; padding: 14px 16px !important; border-width: 2px !important; border-color: #bbf7d0 !important; background: white !important; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
         .result-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
         .result-value { font-size: 13px; font-weight: 800; color: #1e293b; }
@@ -53,7 +52,6 @@ input::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="max-w-5xl mx-auto">
-        <!-- 删除了顶部标题和图标区域 -->
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             <!-- 左侧配置列 -->
@@ -78,7 +76,7 @@ input::-webkit-calendar-picker-indicator {
                         </div>
                     </div>
 
-                    <!-- 实时汇率 已合并到续费信息栏 -->
+                    <!-- 实时汇率 -->
                     <div class="mt-5 pt-4 border-t border-gray-100">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -101,7 +99,6 @@ input::-webkit-calendar-picker-indicator {
                         <div><div class="field-label">交易日期</div><input type="date" id="tradeDate" class="field-input"></div>
                         <div><div class="field-label">到期日期</div><input type="date" id="expiryDate" class="field-input"></div>
                     </div>
-                    <!-- 付款周期 移动到时间信息栏内 -->
                     <div class="field-label">付款周期</div>
                     <div class="grid grid-cols-6 gap-2" id="cycleSelector">
                         <button class="cycle-btn" data-cycle="30">月付</button><button class="cycle-btn" data-cycle="91">季付</button><button class="cycle-btn" data-cycle="182">半年</button><button class="cycle-btn active" data-cycle="365">年付</button><button class="cycle-btn" data-cycle="730">两年</button><button class="cycle-btn" data-cycle="1095">三年</button>
@@ -112,8 +109,8 @@ input::-webkit-calendar-picker-indicator {
                     <p class="field-label">③ 交易结算</p>
                     <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">实付卖家 (CNY)</div><input type="number" id="actualPaid" class="field-input core-input" min="0"></div>
-                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div><input type="number" id="premiumInput" class="field-input core-input"></div>
+                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">实付卖家 (CNY)</div><input type="number" id="actualPaid" class="field-input" min="0"></div>
+                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div><input type="number" id="premiumInput" class="field-input"></div>
                         </div>
                         <div id="bindHint" class="text-[9px] text-emerald-700 font-bold mt-2.5"><i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价</div>
                     </div>
@@ -128,7 +125,7 @@ input::-webkit-calendar-picker-indicator {
                 </div>
             </div>
 
-            <!-- 右侧结果列 - 白色底色 -->
+            <!-- 右侧结果列 -->
             <div class="lg:col-span-5 lg:row-span-2">
                 <div class="sticky top-6 bg-white rounded-2xl overflow-hidden shadow-xl border-b-4 border-[#00BFA5] p-7">
                     <div class="text-center mb-6">
@@ -183,9 +180,7 @@ input::-webkit-calendar-picker-indicator {
                                 <span class="text-[11px] font-bold text-gray-600 group-hover:text-gray-800 transition-colors">开启中介担保 (5%)</span>
                             </label>
                             <select id="middlemanPayer" class="bg-gray-50 border border-gray-300 text-gray-700 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
-                                <option value="buyer">买家付中介</option>
-                                <option value="seller">卖家付中介</option>
-                                <option value="split">AA平摊中介</option>
+                                <option value="buyer">买家付中介</option><option value="seller">卖家付中介</option><option value="split">AA平摊中介</option>
                             </select>
                         </div>
                         
@@ -277,13 +272,6 @@ input::-webkit-calendar-picker-indicator {
             const amount = parseFloat(getEl('renewalAmount').value);
             const trade = new Date(getEl('tradeDate').value), expiry = new Date(getEl('expiryDate').value);
             const days = (expiry - trade) / 86400000;
-            
-            localStorage.setItem('vps_config', JSON.stringify({
-                amount: isNaN(amount) ? '' : amount, curr, cycleDays, 
-                useCustom: customToggle.checked, customRate: getEl('customRateInput').value,
-                useMiddleman: getEl('useMiddleman').checked,
-                middlemanPayer: getEl('middlemanPayer').value
-            }));
 
             if(isNaN(amount) || days <= 0) return resetResults(days);
             
@@ -422,52 +410,15 @@ input::-webkit-calendar-picker-indicator {
             renderRateGrid(); 
             fetchLiveRates();
             
-            const params = new URLSearchParams(window.location.search);
             const today = new Date();
             let tradeStr = getLocalISO(today, false);
-            
-            if([...params.keys()].length > 0) {
-                if(params.has('isDateTime')) { 
-                    isDateTime = true; 
-                    getEl('toggleTimePrecision').classList.add('text-[#00BFA5]'); 
-                    getEl('tradeDate').type = 'datetime-local'; 
-                    getEl('expiryDate').type = 'datetime-local'; 
-                }
-                
-                ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
-                    if (params.has(id)) getEl(id).value = params.get(id);
-                });
-                
-                if(params.has('pushCurrency')) getEl('pushCurrLabel').innerText = params.get('pushCurrency');
-                if(params.has('cycleDays')) cycleDays = parseInt(params.get('cycleDays'));
-                if(params.has('lastInput')) lastInput = params.get('lastInput');
-                if(params.get('useCustomRate') === '1') {
-                    getEl('useCustomRate').checked = true;
-                    if(params.has('customRateInput')) getEl('customRateInput').value = params.get('customRateInput');
-                }
-                if(params.get('useMiddleman') === '1') getEl('useMiddleman').checked = true;
-            } else {
-                const mem = JSON.parse(localStorage.getItem('vps_config'));
-                if(mem) { 
-                    getEl('renewalAmount').value = mem.amount !== undefined ? mem.amount : ''; 
-                    getEl('currencySelector').value = mem.curr || 'USD'; 
-                    cycleDays = mem.cycleDays || 365; 
-                    if(mem.useCustom) {
-                        getEl('useCustomRate').checked = true;
-                        getEl('customRateInput').value = mem.customRate !== undefined ? mem.customRate : '';
-                    }
-                    if(mem.useMiddleman) getEl('useMiddleman').checked = true;
-                    if(mem.middlemanPayer) getEl('middlemanPayer').value = mem.middlemanPayer;
-                }
-                getEl('tradeDate').value = tradeStr;
-                today.setDate(today.getDate() + cycleDays);
-                getEl('expiryDate').value = getLocalISO(today, false);
-            }
+            getEl('tradeDate').value = tradeStr;
+            today.setDate(today.getDate() + cycleDays);
+            getEl('expiryDate').value = getLocalISO(today, false);
             
             document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays));
 
             const dd = getEl('pushCurrDropdown');
-            // Push费用仅保留CNY和USD，默认CNY
             ['CNY', 'USD'].forEach(c => {
                 const opt = document.createElement('div'); opt.className='csel-option'; opt.innerText=c;
                 opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
@@ -518,7 +469,7 @@ input::-webkit-calendar-picker-indicator {
             calculate();
         };
 
-        // 复制详情 - 已删除来源
+        // 复制详情
         getEl('copyBtn').onclick = () => { 
             let midText = '';
             if (getEl('useMiddleman').checked) {
@@ -536,6 +487,7 @@ input::-webkit-calendar-picker-indicator {
             navigator.clipboard.writeText(text); showToast('详情已复制');
         };
         
+        // 分享链接
         getEl('shareBtn').onclick = () => { 
             const p = new URLSearchParams();
             ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
@@ -553,7 +505,8 @@ input::-webkit-calendar-picker-indicator {
             showToast('状态专属链接已生成并复制'); 
         };
         
-        getEl('resetBtn').onclick = () => { localStorage.removeItem('vps_config'); window.location.href = window.location.origin + window.location.pathname; };
+        // 重置
+        getEl('resetBtn').onclick = () => { window.location.href = window.location.origin + window.location.pathname; };
         getEl('useCustomRate').onchange = calculate;
 
         function showToast(m) { 
@@ -563,4 +516,4 @@ input::-webkit-calendar-picker-indicator {
         }
     </script>
 </body>
-</html>  
+</html>
