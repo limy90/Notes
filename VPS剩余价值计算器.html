@@ -16,9 +16,9 @@
         .field-input { width: 100%; padding: 11px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all .15s; }
         .field-input:focus { border-color: #00BFA5; background: white; }
         .core-input { font-size: 18px !important; font-weight: 900 !important; padding: 14px 16px !important; border-width: 2px !important; border-color: #bbf7d0 !important; background: white !important; }
-        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
-        .result-label { font-size: 11px; font-weight: 700; color: #e0f7fa; text-transform: uppercase; }
-        .result-value { font-size: 13px; font-weight: 800; color: white; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .result-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .result-value { font-size: 13px; font-weight: 800; color: #1e293b; }
         @keyframes toast-in { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
         .toast-show { animation: toast-in .25s ease forwards; display: flex !important; }
         .csel-wrap { position: relative; display: inline-block; }
@@ -27,7 +27,7 @@
         .csel-dropdown.open { display: block; }
         .csel-option { padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; }
         .csel-option:hover { background: #f0fdf4; color: #00BFA5; }
-        .progress-bar { background: linear-gradient(90deg, #ffffff, #e0f7fa); box-shadow: 0 0 8px rgba(255,255,255,.4); border-radius: 99px; height: 100%; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+        .progress-bar { background: linear-gradient(90deg, #00BFA5, #00e5cc); box-shadow: 0 0 8px rgba(0,191,165,.5); border-radius: 99px; height: 100%; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
     /* =========================================
    Edge/Chrome 日期输入框防遮挡优化补丁
    ========================================= */
@@ -53,15 +53,7 @@ input::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="max-w-5xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-            <div class="flex items-center gap-3">
-                <div style="background:#00BFA5" class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"><i class="fas fa-server"></i></div>
-                <div>
-                    <h1 class="text-base font-black text-gray-800">VPS 剩余价值计算器</h1>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Calculator</p>
-                </div>
-            </div>
-        </div>
+        <!-- 删除了顶部标题和图标区域 -->
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             <!-- 左侧配置列 -->
@@ -129,68 +121,68 @@ input::-webkit-calendar-picker-indicator {
                         <div class="text-[11px] font-bold text-gray-500">Push费</div>
                         <div class="flex gap-2 items-center ml-auto">
                             <input type="number" id="pushFee" class="field-input !py-1.5 !w-16 !bg-white" placeholder="0" min="0">
-                            <div class="csel-wrap"><button class="csel-btn" id="pushCurrBtn"><span id="pushCurrLabel">USD</span> <i class="fas fa-chevron-down text-[8px]"></i></button><div class="csel-dropdown" id="pushCurrDropdown"></div></div>
+                            <div class="csel-wrap"><button class="csel-btn" id="pushCurrBtn"><span id="pushCurrLabel">CNY</span> <i class="fas fa-chevron-down text-[8px]"></i></button><div class="csel-dropdown" id="pushCurrDropdown"></div></div>
                             <select id="pushPayer" class="field-input !py-1.5 !w-20 !text-[11px] font-bold text-[#00BFA5] bg-white cursor-pointer"><option value="buyer">买家付</option><option value="seller">卖家付</option><option value="split">AA平摊</option></select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 右侧结果列 - 主题色底色 -->
+            <!-- 右侧结果列 - 白色底色 -->
             <div class="lg:col-span-5 lg:row-span-2">
-                <div class="sticky top-6 bg-gradient-to-br from-[#00BFA5] to-[#009c8c] rounded-2xl overflow-hidden shadow-xl border-b-4 border-white/20 p-7 text-white">
+                <div class="sticky top-6 bg-white rounded-2xl overflow-hidden shadow-xl border-b-4 border-[#00BFA5] p-7">
                     <div class="text-center mb-6">
-                        <p class="text-white/80 text-[10px] font-black tracking-widest mb-1">VPS 剩余价值 (CNY)</p>
-                        <div id="resCNYBig" class="text-5xl font-black">¥ --</div>
+                        <p class="text-[#00BFA5] text-[10px] font-black tracking-widest mb-1">VPS 剩余价值 (CNY)</p>
+                        <div id="resCNYBig" class="text-5xl font-black text-gray-800">¥ --</div>
                     </div>
-                    <div id="premiumBox" class="hidden text-center mb-6 border-t border-white/20 pt-4">
+                    <div id="premiumBox" class="hidden text-center mb-6 border-t border-gray-200 pt-4">
                         <p id="premiumTitle" class="text-[10px] font-black mb-1">卖家溢价</p>
                         <div id="premiumValueBig" class="text-2xl font-black">--</div>
                     </div>
-                    <div class="space-y-2 border-t border-white/20 pt-4">
+                    <div class="space-y-2 border-t border-gray-200 pt-4">
                         <div class="result-row"><span class="result-label">折合原币</span><span id="resOrig" class="result-value">--</span></div>
                         <div class="result-row"><span class="result-label">实付卖家</span><span id="resActual" class="result-value">¥ --</span></div>
-                        <div id="middlemanRow" class="result-row hidden"><span class="result-label" id="middlemanRowLabel">买家中介费</span><span id="resMiddleman" class="result-value text-white/70">¥ --</span></div>
+                        <div id="middlemanRow" class="result-row hidden"><span class="result-label" id="middlemanRowLabel">买家中介费</span><span id="resMiddleman" class="result-value text-gray-400">¥ --</span></div>
                         <div class="result-row"><span class="result-label">官方日均</span><span id="dayOfficial" class="result-value">--</span></div>
-                        <div class="result-row border-none"><span class="result-label text-white font-bold">综合日均</span><span id="dayActual" class="result-value text-white font-bold">--</span></div>
+                        <div class="result-row border-none"><span class="result-label text-[#00BFA5]">综合日均</span><span id="dayActual" class="result-value text-[#00BFA5]">--</span></div>
                     </div>
                     
                     <!-- 有效期进度条 -->
                     <div style="margin-top:24px">
                         <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:6px;">
-                            <span style="color:#e0f7fa">剩余有效期</span>
-                            <span id="remainingDays" style="color:#ffffff; font-size:14px; font-weight:900;">-- 天</span>
+                            <span style="color:#64748b">剩余有效期</span>
+                            <span id="remainingDays" style="color:#00BFA5; font-size:14px; font-weight:900;">-- 天</span>
                         </div>
-                        <div style="background:rgba(255,255,255,.15); border-radius:99px; height:6px; overflow:hidden">
+                        <div style="background:#f1f5f9; border-radius:99px; height:6px; overflow:hidden">
                             <div id="remainingProgress" class="progress-bar" style="width:0%"></div>
                         </div>
-                        <div id="progressHint" style="text-align:right; font-size:10px; color:#e0f7fa; font-weight:700; margin-top:4px;"></div>
+                        <div id="progressHint" style="text-align:right; font-size:10px; color:#64748b; font-weight:700; margin-top:4px;"></div>
                     </div>
 
                     <!-- 价值构成比例条 -->
-                    <div id="valueRatioBox" class="mt-5 pt-5 border-t border-white/10 hidden">
-                        <div class="flex justify-between text-[10px] font-black mb-1.5 uppercase text-white/70"><span>价值构成比例</span></div>
-                        <div class="h-3 bg-white/20 rounded-full overflow-hidden flex">
-                            <div id="barValue" class="h-full bg-white transition-all duration-500" style="width:0%"></div>
-                            <div id="barPremium" class="h-full bg-orange-300 transition-all duration-500" style="width:0%"></div>
+                    <div id="valueRatioBox" class="mt-5 pt-5 border-t border-gray-200 hidden">
+                        <div class="flex justify-between text-[10px] font-black mb-1.5 uppercase text-gray-500"><span>价值构成比例</span></div>
+                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div id="barValue" class="h-full bg-[#00BFA5] transition-all duration-500" style="width:0%"></div>
+                            <div id="barPremium" class="h-full bg-orange-400 transition-all duration-500" style="width:0%"></div>
                         </div>
-                        <div class="flex gap-4 mt-2 text-[9px] font-bold text-white/70">
-                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white"></span>剩余价值</div>
-                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-300"></span>溢价部分</div>
+                        <div class="flex gap-4 mt-2 text-[9px] font-bold text-gray-400">
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00BFA5]"></span>剩余价值</div>
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>溢价部分</div>
                         </div>
                     </div>
 
                     <!-- 统一结算模块 -->
-                    <div class="mt-6 pt-5 border-t border-white/10">
+                    <div class="mt-6 pt-5 border-t border-gray-200">
                         <div class="flex items-center justify-between mb-3">
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-white/40 bg-white/10 group-hover:border-white transition-colors">
+                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-gray-300 bg-gray-50 group-hover:border-[#00BFA5] transition-colors">
                                     <input type="checkbox" id="useMiddleman" class="peer sr-only">
-                                    <i class="fas fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                    <i class="fas fa-check text-[10px] text-[#00BFA5] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
                                 </div>
-                                <span class="text-[11px] font-bold text-white/80 group-hover:text-white transition-colors">开启中介担保 (5%)</span>
+                                <span class="text-[11px] font-bold text-gray-600 group-hover:text-gray-800 transition-colors">开启中介担保 (5%)</span>
                             </label>
-                            <select id="middlemanPayer" class="bg-white/15 border border-white/30 text-white text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-white transition-colors">
+                            <select id="middlemanPayer" class="bg-gray-50 border border-gray-300 text-gray-700 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
                                 <option value="buyer">买家付中介</option>
                                 <option value="seller">卖家付中介</option>
                                 <option value="split">AA平摊中介</option>
@@ -198,19 +190,19 @@ input::-webkit-calendar-picker-indicator {
                         </div>
                         
                         <!-- 买家最终总支出卡片 -->
-                        <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-white/10 border-white/20">
+                        <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-gray-50 border-gray-200">
                             <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] font-black uppercase tracking-wider text-white/80 transition-colors" id="finalCostLabel">买家最终总支出</span>
-                                <span id="extraFeeDetail" class="text-[9px] font-bold text-white/60 transition-colors">含额外支出 ¥ 0.00</span>
+                                <span class="text-[10px] font-black uppercase tracking-wider text-gray-600 transition-colors" id="finalCostLabel">买家最终总支出</span>
+                                <span id="extraFeeDetail" class="text-[9px] font-bold text-gray-500 transition-colors">含额外支出 ¥ 0.00</span>
                             </div>
-                            <div class="text-right font-black text-2xl text-white transition-colors" id="finalTotalCostDisplay">¥ --</div>
+                            <div class="text-right font-black text-2xl text-gray-800 transition-colors" id="finalTotalCostDisplay">¥ --</div>
                         </div>
                     </div>
 
                     <div class="flex gap-2 mt-6">
-                        <button id="copyBtn" class="flex-1 py-4 bg-white/20 rounded-xl font-black text-sm shadow-lg hover:bg-white/30 transition-all"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
-                        <button id="shareBtn" class="px-5 bg-white/15 rounded-xl font-black text-sm hover:bg-white/25 transition-all"><i class="fas fa-link"></i></button>
-                        <button id="resetBtn" class="px-5 bg-red-500/20 text-white rounded-xl font-black text-sm hover:bg-red-500/30 transition-all"><i class="fas fa-rotate-right"></i></button>
+                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm text-white shadow-lg hover:scale-[1.02] transition-all"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
+                        <button id="shareBtn" class="px-5 bg-gray-700 rounded-xl font-black text-sm text-white hover:scale-[1.02] transition-all"><i class="fas fa-link"></i></button>
+                        <button id="resetBtn" class="px-5 bg-red-500/10 text-red-500 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-rotate-right"></i></button>
                     </div>
                 </div>
             </div>
@@ -345,7 +337,7 @@ input::-webkit-calendar-picker-indicator {
             
             const pct = Math.min((days / cycleDays) * 100, 100);
             getEl('remainingDays').innerText = `${fmt(days, isDateTime ? 2 : 0)} 天`;
-            getEl('remainingDays').style.color = '#ffffff';
+            getEl('remainingDays').style.color = '#00BFA5';
             getEl('remainingProgress').style.width = `${pct}%`;
             getEl('progressHint').innerText = `剩余 ${pct.toFixed(1)}% 周期`;
             
@@ -357,9 +349,9 @@ input::-webkit-calendar-picker-indicator {
                 
                 getEl('premiumBox').classList.remove('hidden');
                 getEl('premiumTitle').innerText = prem >=0 ? '卖家溢价' : '卖家折价';
-                getEl('premiumTitle').style.color = prem >=0 ? '#ffedb8' : '#bbf7d0';
+                getEl('premiumTitle').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
                 getEl('premiumValueBig').innerText = `${prem>=0?'+':''}¥ ${fmt(prem)}`;
-                getEl('premiumValueBig').style.color = prem >=0 ? '#ffedb8' : '#bbf7d0';
+                getEl('premiumValueBig').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
                 
                 getEl('dayActual').innerText = `¥${fmt(totalBuyerCost/days, 3)} / 天`;
                 
@@ -370,11 +362,17 @@ input::-webkit-calendar-picker-indicator {
                 getEl('extraFeeDetail').innerText = extraFee > 0 ? `额外支出 (Push/中介) + ¥ ${fmt(extraFee)}` : '无额外买家支出';
                 
                 if (extraFee > 0) {
-                    finalBox.style.backgroundColor = "rgba(255,255,255,0.15)";
-                    finalBox.style.borderColor = "rgba(255,255,255,0.3)";
+                    finalBox.style.backgroundColor = "rgba(0,191,165,0.05)";
+                    finalBox.style.borderColor = "rgba(0,191,165,0.2)";
+                    getEl('finalTotalCostDisplay').style.color = "#00BFA5";
+                    getEl('finalCostLabel').style.color = "#00BFA5";
+                    getEl('extraFeeDetail').style.color = "#00BFA5";
                 } else {
-                    finalBox.style.backgroundColor = "rgba(255,255,255,0.1)";
-                    finalBox.style.borderColor = "rgba(255,255,255,0.2)";
+                    finalBox.style.backgroundColor = "#f8fafc";
+                    finalBox.style.borderColor = "#e2e8f0";
+                    getEl('finalTotalCostDisplay').style.color = "#1e293b";
+                    getEl('finalCostLabel').style.color = "#64748b";
+                    getEl('extraFeeDetail').style.color = "#64748b";
                 }
                 
                 getEl('valueRatioBox').classList.remove('hidden');
@@ -392,8 +390,8 @@ input::-webkit-calendar-picker-indicator {
                 getEl('finalTotalCostDisplay').innerText = '¥ --';
                 getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
                 if(getEl('finalCostBox')) {
-                    getEl('finalCostBox').style.backgroundColor = "rgba(255,255,255,0.1)";
-                    getEl('finalCostBox').style.borderColor = "rgba(255,255,255,0.2)";
+                    getEl('finalCostBox').style.backgroundColor = "#f8fafc";
+                    getEl('finalCostBox').style.borderColor = "#e2e8f0";
                 }
             }
             getEl('dayOfficial').innerText = `¥${fmt(resCNY/days, 3)} / 天`;
@@ -402,7 +400,7 @@ input::-webkit-calendar-picker-indicator {
         function resetResults(days) {
             getEl('resCNYBig').innerText = '¥ --';
             getEl('remainingDays').innerText = days <= 0 ? '已到期' : '-- 天';
-            getEl('remainingDays').style.color = days <= 0 ? '#ffcacb' : '#ffffff';
+            getEl('remainingDays').style.color = days <= 0 ? '#f87171' : '#00BFA5';
             getEl('remainingProgress').style.width = '0%';
             getEl('progressHint').innerText = days <= 0 ? '该机器已在交易日前到期' : '';
             getEl('premiumBox').classList.add('hidden');
@@ -415,8 +413,8 @@ input::-webkit-calendar-picker-indicator {
             getEl('finalTotalCostDisplay').innerText = '¥ --';
             getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
             if(getEl('finalCostBox')) {
-                getEl('finalCostBox').style.backgroundColor = "rgba(255,255,255,0.1)";
-                getEl('finalCostBox').style.borderColor = "rgba(255,255,255,0.2)";
+                getEl('finalCostBox').style.backgroundColor = "#f8fafc";
+                getEl('finalCostBox').style.borderColor = "#e2e8f0";
             }
         }
 
@@ -469,12 +467,20 @@ input::-webkit-calendar-picker-indicator {
             document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays));
 
             const dd = getEl('pushCurrDropdown');
-            Object.keys(rates).forEach(c => {
-                if(c==='CNY') return;
+            // Push费用仅保留CNY和USD，默认CNY
+            ['CNY', 'USD'].forEach(c => {
                 const opt = document.createElement('div'); opt.className='csel-option'; opt.innerText=c;
                 opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
                 dd.appendChild(opt);
             });
+
+            // 自动聚焦续费金额，有数值则清空
+            const renewalInput = getEl('renewalAmount');
+            renewalInput.focus();
+            if (renewalInput.value) {
+                renewalInput.value = '';
+                calculate();
+            }
         };
 
         getEl('pushCurrBtn').onclick = (e) => { e.stopPropagation(); getEl('pushCurrDropdown').classList.toggle('open'); };
@@ -557,4 +563,4 @@ input::-webkit-calendar-picker-indicator {
         }
     </script>
 </body>
-</html>
+</html>  
