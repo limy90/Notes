@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS剩余价值计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
+        body { background: #eef2f7; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .cycle-btn { transition: all .15s; border: 1.5px solid #e2e8f0; background: white; color: #94a3b8; font-weight: 700; font-size: 12px; border-radius: 10px; padding: 8px 0; cursor: pointer; width: 100%; }
+        .cycle-btn.active { background: #00BFA5; border-color: #00BFA5; color: white; box-shadow: 0 4px 14px rgba(0,191,165,.35); }
+        .field-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px; }
+        .field-input { width: 100%; padding: 11px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all .15s; }
+        .field-input:focus { border-color: #00BFA5; background: white; }
+        .core-input { font-size: 18px !important; font-weight: 900 !important; padding: 14px 16px !important; border-width: 2px !important; border-color: #bbf7d0 !important; background: white !important; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .result-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .result-value { font-size: 13px; font-weight: 800; color: white; }
+        @keyframes toast-in { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+        .toast-show { animation: toast-in .25s ease forwards; display: flex !important; }
+        .csel-wrap { position: relative; display: inline-block; }
+        .csel-btn { display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: white; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 12px; font-weight: 800; color: #1e293b; cursor: pointer; }
+        .csel-dropdown { position: absolute; z-index: 999; top: calc(100% + 4px); left: 0; background: white; border: 1.5px solid #e8edf3; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,.12); min-width: 160px; padding: 4px; display: none; }
+        .csel-dropdown.open { display: block; }
+        .csel-option { padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; }
+        .csel-option:hover { background: #f0fdf4; color: #00BFA5; }
+        .progress-bar { background: linear-gradient(90deg, #00BFA5, #00e5cc); box-shadow: 0 0 8px rgba(0,191,165,.5); border-radius: 99px; height: 100%; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+    /* =========================================
+   Edge/Chrome 日期输入框防遮挡优化补丁
+   ========================================= */
+input[type="date"] {
+    padding-left: 10px !important;
+    padding-right: 4px !important; 
+    letter-spacing: -0.5px !important; 
+    min-width: 0; 
+}
+
+/* 强行接管 Edge 和 Chrome 自带的日历图标排版，释放空间 */
+input::-webkit-calendar-picker-indicator {
+    margin-left: 0px !important;
+    padding: 0px !important;
+    width: 16px !important; 
+    cursor: pointer;
+}
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none hidden bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-2xl items-center gap-2">
+        <i id="toastIcon" class="fas fa-check-circle text-emerald-400"></i><span id="toastMsg"></span>
+    </div>
+
+    <div class="max-w-5xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <div style="background:#00BFA5" class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"><i class="fas fa-server"></i></div>
+                <div>
+                    <h1 class="text-base font-black text-gray-800">VPS 剩余价值计算器</h1>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">MASTER'S EXCLUSIVE TOOL 喵</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:flex sm:items-center gap-x-6 gap-y-1 text-[11px] text-gray-400 font-bold">
+                <div><i class="fas fa-eye w-4 text-center"></i> 浏览次数 <span id="busuanzi_value_site_pv">--</span></div>
+                <div><i class="fas fa-user w-4 text-center"></i> 访客人数 <span id="busuanzi_value_site_uv">--</span></div>
+                <div class="text-[#00BFA5]"><i class="fas fa-calendar-day w-4 text-center"></i> 今日计算 <span id="todayCount">--</span></div>
+                <div class="text-orange-400"><i class="fas fa-fire w-4 text-center"></i> 累计计算 <span id="totalCount">--</span></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- 左侧配置列 -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p class="field-label">① 续费信息</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-4">
+                        <div class="sm:col-span-3">
+                            <div class="field-label">续费金额</div>
+                            <input type="number" id="renewalAmount" class="field-input" placeholder="请输入金额" min="0">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <div class="field-label flex justify-between"><span>计价币种</span><label id="customRateToggleBox" class="flex items-center gap-1 cursor-pointer normal-case"><input type="checkbox" id="useCustomRate" class="accent-[#00BFA5]"> 自定义</label></div>
+                            <select id="currencySelector" class="field-input cursor-pointer">
+                                <option value="USD">USD · 美元</option><option value="CNY">CNY · 人民币</option><option value="EUR">EUR · 欧元</option><option value="GBP">GBP · 英镑</option><option value="JPY">JPY · 日元</option><option value="HKD">HKD · 港币</option><option value="TWD">TWD · 新台币</option>
+                            </select>
+                            <div id="customRateWrapper" class="hidden mt-2 flex items-center gap-1.5 bg-gray-50 p-1.5 rounded-lg border">
+                                <span class="text-[10px] font-bold text-gray-400 pl-1">1 <span id="customRateLabel">USD</span> =</span>
+                                <input type="number" id="customRateInput" class="field-input !py-1 !px-2 !text-[12px] !bg-white" placeholder="汇率" min="0">
+                                <span class="text-[10px] font-bold text-gray-400 pr-1">CNY</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field-label">付款周期</div>
+                    <div class="grid grid-cols-6 gap-2" id="cycleSelector">
+                        <button class="cycle-btn" data-cycle="30">月付</button><button class="cycle-btn" data-cycle="91">季付</button><button class="cycle-btn" data-cycle="182">半年</button><button class="cycle-btn active" data-cycle="365">年付</button><button class="cycle-btn" data-cycle="730">两年</button><button class="cycle-btn" data-cycle="1095">三年</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4"><p class="field-label">② 时间信息</p><button id="toggleTimePrecision" class="text-[10px] text-gray-400 font-bold hover:text-[#00BFA5] transition-colors"><i class="fas fa-clock mr-1"></i>精确到时分</button></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><div class="field-label">交易日期</div><input type="date" id="tradeDate" class="field-input"></div>
+                        <div><div class="field-label">到期日期</div><input type="date" id="expiryDate" class="field-input"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p class="field-label">③ 交易结算</p>
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">实付卖家 (CNY)</div><input type="number" id="actualPaid" class="field-input core-input" min="0"></div>
+                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div><input type="number" id="premiumInput" class="field-input core-input"></div>
+                        </div>
+                        <div id="bindHint" class="text-[9px] text-emerald-700 font-bold mt-2.5"><i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+                        <div class="text-[11px] font-bold text-gray-500">Push费</div>
+                        <div class="flex gap-2 items-center ml-auto">
+                            <input type="number" id="pushFee" class="field-input !py-1.5 !w-16 !bg-white" placeholder="0" min="0">
+                            <div class="csel-wrap"><button class="csel-btn" id="pushCurrBtn"><span id="pushCurrLabel">USD</span> <i class="fas fa-chevron-down text-[8px]"></i></button><div class="csel-dropdown" id="pushCurrDropdown"></div></div>
+                            <select id="pushPayer" class="field-input !py-1.5 !w-20 !text-[11px] font-bold text-[#00BFA5] bg-white cursor-pointer"><option value="buyer">买家付</option><option value="seller">卖家付</option><option value="split">AA平摊</option></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧结果列 -->
+            <div class="lg:col-span-5 lg:row-span-2">
+                <div class="sticky top-6 bg-[#1a1b2e] rounded-2xl overflow-hidden shadow-xl border-b-4 border-[#00BFA5] p-7 text-white">
+                    <div class="text-center mb-6">
+                        <p class="text-[#00BFA5] text-[10px] font-black tracking-widest mb-1">VPS 剩余价值 (CNY)</p>
+                        <div id="resCNYBig" class="text-5xl font-black">¥ --</div>
+                    </div>
+                    <div id="premiumBox" class="hidden text-center mb-6 border-t border-white/10 pt-4">
+                        <p id="premiumTitle" class="text-[10px] font-black mb-1">卖家溢价</p>
+                        <div id="premiumValueBig" class="text-2xl font-black">--</div>
+                    </div>
+                    <div class="space-y-2 border-t border-white/10 pt-4">
+                        <div class="result-row"><span class="result-label">折合原币</span><span id="resOrig" class="result-value">--</span></div>
+                        <div class="result-row"><span class="result-label">实付卖家</span><span id="resActual" class="result-value">¥ --</span></div>
+                        <div id="middlemanRow" class="result-row hidden"><span class="result-label" id="middlemanRowLabel">买家中介费</span><span id="resMiddleman" class="result-value text-gray-400">¥ --</span></div>
+                        <div class="result-row"><span class="result-label">官方日均</span><span id="dayOfficial" class="result-value">--</span></div>
+                        <div class="result-row border-none"><span class="result-label text-[#00BFA5]">综合日均</span><span id="dayActual" class="result-value text-[#00BFA5]">--</span></div>
+                    </div>
+                    
+                    <!-- 有效期进度条 -->
+                    <div style="margin-top:24px">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:6px;">
+                            <span style="color:#475569">剩余有效期</span>
+                            <span id="remainingDays" style="color:#00BFA5; font-size:14px; font-weight:900;">-- 天</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,.07); border-radius:99px; height:6px; overflow:hidden">
+                            <div id="remainingProgress" class="progress-bar" style="width:0%"></div>
+                        </div>
+                        <div id="progressHint" style="text-align:right; font-size:10px; color:#475569; font-weight:700; margin-top:4px;"></div>
+                    </div>
+
+                    <!-- 价值构成比例条 -->
+                    <div id="valueRatioBox" class="mt-5 pt-5 border-t border-white/5 hidden">
+                        <div class="flex justify-between text-[10px] font-black mb-1.5 uppercase text-gray-500"><span>价值构成比例</span></div>
+                        <div class="h-3 bg-white/10 rounded-full overflow-hidden flex">
+                            <div id="barValue" class="h-full bg-[#00BFA5] transition-all duration-500" style="width:0%"></div>
+                            <div id="barPremium" class="h-full bg-orange-400 transition-all duration-500" style="width:0%"></div>
+                        </div>
+                        <div class="flex gap-4 mt-2 text-[9px] font-bold text-gray-400">
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00BFA5]"></span>剩余价值</div>
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>溢价部分</div>
+                        </div>
+                    </div>
+
+                    <!-- 统一结算模块 (中介费 + 总成本) -->
+                    <div class="mt-6 pt-5 border-t border-white/5">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-gray-500 bg-white/5 group-hover:border-[#00BFA5] transition-colors">
+                                    <input type="checkbox" id="useMiddleman" class="peer sr-only">
+                                    <i class="fas fa-check text-[10px] text-[#00BFA5] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                </div>
+                                <span class="text-[11px] font-bold text-gray-400 group-hover:text-gray-200 transition-colors">开启中介担保 (5%)</span>
+                            </label>
+                            <select id="middlemanPayer" class="bg-black/20 border border-white/20 text-white/80 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
+                                <option value="buyer">买家付中介</option>
+                                <option value="seller">卖家付中介</option>
+                                <option value="split">AA平摊中介</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 买家最终总支出卡片 (常驻展示，动态变色) -->
+                        <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-white/5 border-white/10">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-[#94a3b8] transition-colors" id="finalCostLabel">买家最终总支出</span>
+                                <span id="extraFeeDetail" class="text-[9px] font-bold text-[#64748b] transition-colors">含额外支出 ¥ 0.00</span>
+                            </div>
+                            <div class="text-right font-black text-2xl text-white transition-colors" id="finalTotalCostDisplay">¥ --</div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-6">
+                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm shadow-lg hover:scale-[1.02] transition-all"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
+                        <button id="shareBtn" class="px-5 bg-gray-700 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-link"></i></button>
+                        <button id="resetBtn" class="px-5 bg-red-500/10 text-red-500 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-rotate-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 完全修复的汇率网格 -->
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest">
+                            <i class="fas fa-chart-area mr-1.5" style="color:#00BFA5"></i>实时汇率 (对 CNY)
+                        </p>
+                        <div class="flex items-center gap-2">
+                            <span id="rateStatus" class="hidden text-[10px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                                <i class="fas fa-check mr-1"></i>已更新
+                            </span>
+                            <span class="text-[10px] text-gray-300 font-bold">FRANKFURTER API</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-5 gap-2" id="rateGrid"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://vps-calc-24228-default-rtdb.firebaseio.com';
+        
+        let cycleDays = 365, isDateTime = false, lastInput = 'actualPaid', toastTimer = null;
+        let rates = { USD:7.23, EUR:7.82, GBP:9.12, JPY:0.047, HKD:0.92, TWD:0.23, KRW:0.005, SGD:5.38, AUD:4.75, CAD:5.32, CNY:1 };
+        
+        const fmt = (n, d=2) => n.toFixed(d);
+        const getEl = id => document.getElementById(id);
+
+        const getLocalISO = (d, isDT) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, isDT ? 16 : 10);
+
+        function renderRateGrid() {
+            const grid = getEl('rateGrid');
+            grid.innerHTML = '';
+            ['USD', 'EUR', 'GBP', 'JPY', 'HKD', 'TWD', 'KRW', 'SGD', 'AUD', 'CAD'].forEach(curr => {
+                const rate = rates[curr];
+                if(!rate) return;
+                const isTwd = curr === 'TWD';
+                grid.innerHTML += `
+                    <div class="text-center p-2 rounded-xl border flex flex-col justify-center items-center ${isTwd ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
+                        <div class="flex items-center gap-1">
+                            <span class="text-[9px] font-black tracking-wider ${isTwd ? 'text-amber-600' : 'text-slate-400'}">${curr}</span>
+                            ${isTwd ? '<span class="text-[8px] bg-amber-300 text-amber-900 px-1 rounded scale-90 whitespace-nowrap">非实时</span>' : ''}
+                        </div>
+                        <div class="text-[11px] font-extrabold text-slate-700 mt-1">${rate.toFixed((curr === 'JPY' || curr === 'KRW') ? 4 : 3)}</div>
+                    </div>`;
+            });
+        }
+
+        async function fetchLiveRates() {
+            try {
+                const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=CNY,EUR,GBP,JPY,HKD,KRW,SGD,AUD,CAD');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const u2c = data.rates.CNY;
+                Object.assign(rates, { 
+                    USD: u2c, EUR: u2c / data.rates.EUR, GBP: u2c / data.rates.GBP, 
+                    JPY: u2c / data.rates.JPY, HKD: u2c / data.rates.HKD, KRW: u2c / data.rates.KRW, 
+                    SGD: u2c / data.rates.SGD, AUD: u2c / data.rates.AUD, CAD: u2c / data.rates.CAD 
+                });
+                const badge = getEl('rateStatus');
+                badge.classList.remove('hidden');
+            } catch(e) {
+                console.error('汇率获取失败:', e);
+
+  const badge = getEl('rateStatus');
+  badge.textContent = '汇率获取失败，使用默认汇率';
+  badge.classList.remove('hidden');
+            }
+            renderRateGrid();
+            calculate();
+        }
+
+        async function updateCounts(isAction = false) {
+            const today = getLocalISO(new Date(), false).replace(/-/g,'');
+            const ts = new Date().getTime(); 
+            try {
+                let dRes = await fetch(`${API_BASE}/dailyCalc/${today}.json?_=${ts}`);
+                let tRes = await fetch(`${API_BASE}/calcCount.json?_=${ts}`);
+                
+                let dCount = parseInt(await dRes.json()) || 0;
+                let tCount = parseInt(await tRes.json()) || 0;
+
+                if(isAction) {
+                    dCount += 1; tCount += 1;
+                    await fetch(`${API_BASE}/dailyCalc/${today}.json`, { 
+                        method:'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dCount) 
+                    });
+                    await fetch(`${API_BASE}/calcCount.json`, { 
+                        method:'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tCount) 
+                    });
+                }
+                getEl('todayCount').innerText = dCount;
+                getEl('totalCount').innerText = tCount;
+            } catch(e) {}
+        }
+
+        function calculate() {
+            const curr = getEl('currencySelector').value;
+            getEl('customRateLabel').innerText = curr;
+            
+            const customToggleBox = getEl('customRateToggleBox');
+            const customToggle = getEl('useCustomRate');
+            const customWrap = getEl('customRateWrapper');
+            if(curr === 'CNY') {
+                customToggle.checked = false;
+                customToggleBox.style.display = 'none';
+            } else {
+                customToggleBox.style.display = 'flex';
+            }
+            customWrap.classList.toggle('hidden', !customToggle.checked);
+
+            const amount = parseFloat(getEl('renewalAmount').value);
+            const trade = new Date(getEl('tradeDate').value), expiry = new Date(getEl('expiryDate').value);
+            const days = (expiry - trade) / 86400000;
+            
+            localStorage.setItem('vps_config', JSON.stringify({
+                amount: isNaN(amount) ? '' : amount, curr, cycleDays, 
+                useCustom: customToggle.checked, customRate: getEl('customRateInput').value,
+                useMiddleman: getEl('useMiddleman').checked,
+                middlemanPayer: getEl('middlemanPayer').value
+            }));
+
+            if(isNaN(amount) || days <= 0) return resetResults(days);
+            
+            let rate = rates[curr] || 1;
+            if(customToggle.checked) rate = parseFloat(getEl('customRateInput').value) || rate;
+            
+            const resOrig = (amount / cycleDays) * days, resCNY = resOrig * rate;
+            const push = (parseFloat(getEl('pushFee').value)||0) * (rates[getEl('pushCurrLabel').innerText] || 1);
+            const payer = getEl('pushPayer').value;
+            const bPush = payer==='buyer'?push : (payer==='split'?push/2:0), sPush = payer==='seller'?push : (payer==='split'?push/2:0);
+
+            let actPaidStr = getEl('actualPaid').value;
+            let premStr = getEl('premiumInput').value;
+            let actPaid = parseFloat(actPaidStr), prem = parseFloat(premStr);
+
+            const isMiddleman = getEl('useMiddleman').checked;
+            const middlemanPayer = getEl('middlemanPayer').value;
+
+            // 完美逆推逻辑：根据买/卖/AA的身份，精准计算卖家的真实溢价和实付
+            if(lastInput === 'actualPaid') {
+                if(actPaidStr === '') { getEl('premiumInput').value = ''; prem = NaN; }
+                else if(!isNaN(actPaid)) { 
+                    let sMid = 0;
+                    if (isMiddleman) {
+                        if (middlemanPayer === 'seller') sMid = actPaid * 0.05;
+                        else if (middlemanPayer === 'split') sMid = actPaid * 0.025;
+                    }
+                    prem = (actPaid - sPush - sMid) - resCNY; 
+                    getEl('premiumInput').value = fmt(prem); 
+                }
+            } else {
+                if(premStr === '') { getEl('actualPaid').value = ''; actPaid = NaN; }
+                else if(!isNaN(prem)) { 
+                    if (isMiddleman && middlemanPayer === 'seller') actPaid = (resCNY + prem + sPush) / 0.95;
+                    else if (isMiddleman && middlemanPayer === 'split') actPaid = (resCNY + prem + sPush) / 0.975;
+                    else actPaid = resCNY + prem + sPush;
+                    getEl('actualPaid').value = fmt(actPaid); 
+                }
+            }
+
+            let middlemanFee = 0;
+            let bMid = 0;
+            if (isMiddleman && !isNaN(actPaid) && actPaid > 0) {
+                middlemanFee = actPaid * 0.05;
+                if (middlemanPayer === 'buyer') bMid = middlemanFee;
+                else if (middlemanPayer === 'split') bMid = middlemanFee / 2;
+            }
+            const totalBuyerCost = actPaid + bPush + bMid;
+
+            getEl('resCNYBig').innerText = `¥ ${fmt(resCNY)}`;
+            getEl('resOrig').innerText = `${fmt(resOrig)} ${curr}`;
+            
+            const pct = Math.min((days / cycleDays) * 100, 100);
+            getEl('remainingDays').innerText = `${fmt(days, isDateTime ? 2 : 0)} 天`;
+            getEl('remainingDays').style.color = '#00BFA5';
+            getEl('remainingProgress').style.width = `${pct}%`;
+            getEl('progressHint').innerText = `剩余 ${pct.toFixed(1)}% 周期`;
+            
+            if(!isNaN(actPaid) && actPaid >= 0) {
+                getEl('resActual').innerText = `¥ ${fmt(actPaid)}`;
+                
+                getEl('middlemanRow').classList.toggle('hidden', bMid <= 0);
+                getEl('resMiddleman').innerText = `+ ¥ ${fmt(bMid)}`;
+                
+                getEl('premiumBox').classList.remove('hidden');
+                getEl('premiumTitle').innerText = prem >=0 ? '卖家溢价' : '卖家折价';
+                getEl('premiumTitle').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
+                getEl('premiumValueBig').innerText = `${prem>=0?'+':''}¥ ${fmt(prem)}`;
+                getEl('premiumValueBig').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
+                
+                getEl('dayActual').innerText = `¥${fmt(totalBuyerCost/days, 3)} / 天`;
+                
+                // --- 新的统一结算面板控制逻辑 ---
+                const finalBox = getEl('finalCostBox');
+                const extraFee = bPush + bMid; // 抓取买家承担的所有额外费用（Push费 + 中介费）
+                
+                getEl('finalTotalCostDisplay').innerText = `¥ ${fmt(totalBuyerCost)}`;
+                getEl('extraFeeDetail').innerText = extraFee > 0 ? `额外支出 (Push/中介) + ¥ ${fmt(extraFee)}` : '无额外买家支出';
+                
+                // 只要产生了买家额外开支，卡片就高亮变绿提醒
+                if (extraFee > 0) {
+                    finalBox.style.backgroundColor = "rgba(0,191,165,0.1)";
+                    finalBox.style.borderColor = "rgba(0,191,165,0.3)";
+                    getEl('finalTotalCostDisplay').style.color = "#00BFA5";
+                    getEl('finalCostLabel').style.color = "#00BFA5";
+                    getEl('extraFeeDetail').style.color = "#00BFA5";
+                } else {
+                    finalBox.style.backgroundColor = "rgba(255,255,255,0.05)";
+                    finalBox.style.borderColor = "rgba(255,255,255,0.1)";
+                    getEl('finalTotalCostDisplay').style.color = "#ffffff";
+                    getEl('finalCostLabel').style.color = "#94a3b8";
+                    getEl('extraFeeDetail').style.color = "#64748b";
+                }
+                // ------------------------------
+                
+                getEl('valueRatioBox').classList.remove('hidden');
+                const totalPart = resCNY + Math.max(0, prem) || 1;
+                getEl('barValue').style.width = `${(resCNY/totalPart)*100}%`;
+                getEl('barPremium').style.width = `${(Math.max(0, prem)/totalPart)*100}%`;
+            } else {
+                getEl('premiumBox').classList.add('hidden');
+                getEl('resActual').innerText = '¥ --';
+                getEl('middlemanRow').classList.add('hidden');
+                getEl('dayActual').innerText = '--';
+                getEl('valueRatioBox').classList.add('hidden');
+                getEl('barValue').style.width = '100%'; getEl('barPremium').style.width = '0%';
+                
+                getEl('finalTotalCostDisplay').innerText = '¥ --';
+                getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
+                getEl('finalTotalCostDisplay').style.color = "#ffffff";
+                getEl('finalCostLabel').style.color = "#94a3b8";
+                getEl('extraFeeDetail').style.color = "#64748b";
+                if(getEl('finalCostBox')) {
+                    getEl('finalCostBox').style.backgroundColor = "rgba(255,255,255,0.05)";
+                    getEl('finalCostBox').style.borderColor = "rgba(255,255,255,0.1)";
+                }
+            }
+            getEl('dayOfficial').innerText = `¥${fmt(resCNY/days, 3)} / 天`;
+        }
+
+        function resetResults(days) {
+            getEl('resCNYBig').innerText = '¥ --';
+            getEl('remainingDays').innerText = days <= 0 ? '已到期' : '-- 天';
+            getEl('remainingDays').style.color = days <= 0 ? '#f87171' : '#00BFA5';
+            getEl('remainingProgress').style.width = '0%';
+            getEl('progressHint').innerText = days <= 0 ? '该机器已在交易日前到期' : '';
+            getEl('premiumBox').classList.add('hidden');
+            getEl('valueRatioBox').classList.add('hidden');
+            getEl('barValue').style.width = '0%'; getEl('barPremium').style.width = '0%';
+            getEl('dayOfficial').innerText = '--'; getEl('dayActual').innerText = '--';
+            getEl('resOrig').innerText = '--'; getEl('resActual').innerText = '¥ --';
+            
+            getEl('middlemanRow').classList.add('hidden');
+            getEl('finalTotalCostDisplay').innerText = '¥ --';
+            getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
+            getEl('finalTotalCostDisplay').style.color = "#ffffff";
+            getEl('finalCostLabel').style.color = "#94a3b8";
+            getEl('extraFeeDetail').style.color = "#64748b";
+            if(getEl('finalCostBox')) {
+                getEl('finalCostBox').style.backgroundColor = "rgba(255,255,255,0.05)";
+                getEl('finalCostBox').style.borderColor = "rgba(255,255,255,0.1)";
+            }
+        }
+
+        window.onload = () => {
+            renderRateGrid(); 
+            fetchLiveRates();
+            
+            const params = new URLSearchParams(window.location.search);
+            const today = new Date();
+            let tradeStr = getLocalISO(today, false);
+            
+            if([...params.keys()].length > 0) {
+                if(params.has('isDateTime')) { 
+                    isDateTime = true; 
+                    getEl('toggleTimePrecision').classList.add('text-[#00BFA5]'); 
+                    getEl('tradeDate').type = 'datetime-local'; 
+                    getEl('expiryDate').type = 'datetime-local'; 
+                }
+                
+                ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
+                    if (params.has(id)) getEl(id).value = params.get(id);
+                });
+                
+                if(params.has('pushCurrency')) getEl('pushCurrLabel').innerText = params.get('pushCurrency');
+                if(params.has('cycleDays')) cycleDays = parseInt(params.get('cycleDays'));
+                if(params.has('lastInput')) lastInput = params.get('lastInput');
+                if(params.get('useCustomRate') === '1') {
+                    getEl('useCustomRate').checked = true;
+                    if(params.has('customRateInput')) getEl('customRateInput').value = params.get('customRateInput');
+                }
+                if(params.get('useMiddleman') === '1') getEl('useMiddleman').checked = true;
+            } else {
+                const mem = JSON.parse(localStorage.getItem('vps_config'));
+                if(mem) { 
+                    getEl('renewalAmount').value = mem.amount !== undefined ? mem.amount : ''; 
+                    getEl('currencySelector').value = mem.curr || 'USD'; 
+                    cycleDays = mem.cycleDays || 365; 
+                    if(mem.useCustom) {
+                        getEl('useCustomRate').checked = true;
+                        getEl('customRateInput').value = mem.customRate !== undefined ? mem.customRate : '';
+                    }
+                    if(mem.useMiddleman) getEl('useMiddleman').checked = true;
+                    if(mem.middlemanPayer) getEl('middlemanPayer').value = mem.middlemanPayer;
+                }
+                getEl('tradeDate').value = tradeStr;
+                today.setDate(today.getDate() + cycleDays);
+                getEl('expiryDate').value = getLocalISO(today, false);
+            }
+            
+            document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays));
+
+            const dd = getEl('pushCurrDropdown');
+            Object.keys(rates).forEach(c => {
+                if(c==='CNY') return;
+                const opt = document.createElement('div'); opt.className='csel-option'; opt.innerText=c;
+                opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
+                dd.appendChild(opt);
+            });
+
+            updateCounts();
+        };
+
+        getEl('pushCurrBtn').onclick = (e) => { e.stopPropagation(); getEl('pushCurrDropdown').classList.toggle('open'); };
+        document.onclick = () => getEl('pushCurrDropdown').classList.remove('open');
+        getEl('actualPaid').onfocus = () => { lastInput = 'actualPaid'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价'; };
+        getEl('premiumInput').onfocus = () => { lastInput = 'premiumInput'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【卖家溢价】推算实付'; };
+        
+        ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','useCustomRate','customRateInput','useMiddleman','middlemanPayer'].forEach(id => {
+            getEl(id).onchange = calculate; getEl(id).oninput = calculate;
+        });
+
+        document.querySelectorAll('.cycle-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelector('.cycle-btn.active').classList.remove('active');
+                btn.classList.add('active'); cycleDays = parseInt(btn.dataset.cycle);
+                const d = new Date(getEl('tradeDate').value); d.setDate(d.getDate() + cycleDays);
+                getEl('expiryDate').value = getLocalISO(d, isDateTime);
+                calculate();
+            };
+        });
+
+        getEl('toggleTimePrecision').onclick = () => {
+            isDateTime = !isDateTime; getEl('toggleTimePrecision').classList.toggle('text-[#00BFA5]', isDateTime);
+            let tVal = getEl('tradeDate').value, eVal = getEl('expiryDate').value;
+            getEl('tradeDate').type = isDateTime ? 'datetime-local' : 'date'; 
+            getEl('expiryDate').type = isDateTime ? 'datetime-local' : 'date';
+            
+            if(isDateTime) {
+                if(tVal && tVal.length === 10) getEl('tradeDate').value = tVal + 'T00:00';
+                if(eVal && eVal.length === 10) getEl('expiryDate').value = eVal + 'T00:00';
+            } else {
+                if(tVal && tVal.length > 10) getEl('tradeDate').value = tVal.slice(0, 10);
+                if(eVal && eVal.length > 10) getEl('expiryDate').value = eVal.slice(0, 10);
+            }
+            calculate();
+        };
+
+        getEl('copyBtn').onclick = () => { 
+            let midText = '';
+            if (getEl('useMiddleman').checked) {
+                let actP = parseFloat(getEl('actualPaid').value) || 0;
+                let midVal = actP * 0.05;
+                if (getEl('middlemanPayer').value === 'buyer') {
+                    midText = `\n买家付中介: ¥${fmt(midVal)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                } else if (getEl('middlemanPayer').value === 'split') {
+                    midText = `\nAA平摊中介: ¥${fmt(midVal / 2)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                } else {
+                    midText = `\n卖家扣中介: -¥${fmt(midVal)}\n买家总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                }
+            }
+            const text = `【VPS 剩余价值详情】\n剩余价值: ${getEl('resCNYBig').innerText}\n有效期: ${getEl('remainingDays').innerText}\n实付卖家: ${getEl('resActual').innerText}${midText}\n综合日均: ${getEl('dayActual').innerText}\n── by MISTAKECCC`;
+            navigator.clipboard.writeText(text); showToast('详情已复制，今日计算+1喵'); updateCounts(true);
+        };
+        
+        getEl('shareBtn').onclick = () => { 
+            const p = new URLSearchParams();
+            ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
+                const v = getEl(id).value; if(v !== '') p.set(id, v);
+            });
+            p.set('cycleDays', cycleDays); p.set('lastInput', lastInput); p.set('pushCurrency', getEl('pushCurrLabel').innerText);
+            if(isDateTime) p.set('isDateTime', '1');
+            if(getEl('useCustomRate').checked) {
+                p.set('useCustomRate', '1');
+                if(getEl('customRateInput').value !== '') p.set('customRateInput', getEl('customRateInput').value);
+            }
+            if(getEl('useMiddleman').checked) p.set('useMiddleman', '1');
+            const shareUrl = window.location.origin + window.location.pathname + '?' + p.toString();
+            navigator.clipboard.writeText(shareUrl); 
+            showToast('状态专属链接已生成并复制喵'); updateCounts(true); 
+        };
+        
+        getEl('resetBtn').onclick = () => { localStorage.removeItem('vps_config'); window.location.href = window.location.origin + window.location.pathname; };
+        getEl('useCustomRate').onchange = calculate;
+
+        function showToast(m) { 
+            clearTimeout(toastTimer); const t = getEl('toast'); getEl('toastMsg').innerText = m; 
+            t.classList.remove('hidden'); t.classList.add('toast-show');
+            toastTimer = setTimeout(() => { t.classList.remove('toast-show'); t.classList.add('hidden'); }, 2000);
+        }
+    </script>
+</body>
+</html>
