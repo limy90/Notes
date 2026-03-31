@@ -15,7 +15,8 @@
         .field-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px; }
         .field-input { width: 100%; padding: 11px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all .15s; }
         .field-input:focus { border-color: #00BFA5; background: white; }
-        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .core-input { @apply field-input; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.07); }
         .result-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
         .result-value { font-size: 13px; font-weight: 800; color: #1e293b; }
         @keyframes toast-in { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
@@ -27,23 +28,19 @@
         .csel-option { padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; }
         .csel-option:hover { background: #f0fdf4; color: #00BFA5; }
         .progress-bar { background: linear-gradient(90deg, #00BFA5, #00e5cc); box-shadow: 0 0 8px rgba(0,191,165,.5); border-radius: 99px; height: 100%; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
-    /* =========================================
-   Edge/Chrome 日期输入框防遮挡优化补丁
-   ========================================= */
-input[type="date"] {
-    padding-left: 10px !important;
-    padding-right: 4px !important; 
-    letter-spacing: -0.5px !important; 
-    min-width: 0; 
-}
-
-/* 强行接管 Edge 和 Chrome 自带的日历图标排版，释放空间 */
-input::-webkit-calendar-picker-indicator {
-    margin-left: 0px !important;
-    padding: 0px !important;
-    width: 16px !important; 
-    cursor: pointer;
-}
+        #rateRefreshTimer { cursor: pointer; user-select: none; }
+        input[type="date"] {
+            padding-left: 10px !important;
+            padding-right: 4px !important; 
+            letter-spacing: -0.5px !important; 
+            min-width: 0; 
+        }
+        input::-webkit-calendar-picker-indicator {
+            margin-left: 0px !important;
+            padding: 0px !important;
+            width: 16px !important; 
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -52,21 +49,19 @@ input::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="max-w-5xl mx-auto">
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <!-- 左侧配置列 -->
             <div class="lg:col-span-7 space-y-4">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <p class="field-label">① 续费信息</p>
                     <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-4">
                         <div class="sm:col-span-3">
                             <div class="field-label">续费金额</div>
-                            <input type="number" id="renewalAmount" class="field-input" placeholder="请输入金额" min="0">
+                            <input type="number" id="renewalAmount" class="field-input" placeholder="请输入金额" min="0" autofocus>
                         </div>
                         <div class="sm:col-span-2">
                             <div class="field-label flex justify-between"><span>计价币种</span><label id="customRateToggleBox" class="flex items-center gap-1 cursor-pointer normal-case"><input type="checkbox" id="useCustomRate" class="accent-[#00BFA5]"> 自定义</label></div>
                             <select id="currencySelector" class="field-input cursor-pointer">
-                                <option value="USD">USD · 美元</option><option value="CNY">CNY · 人民币</option><option value="EUR">EUR · 欧元</option><option value="GBP">GBP · 英镑</option><option value="JPY">JPY · 日元</option><option value="HKD">HKD · 港币</option><option value="TWD">TWD · 新台币</option>
+                                <option value="USD">USD · 美元</option><option value="CNY">CNY · 人民币</option><option value="EUR">EUR · 欧元</option><option value="GBP">GBP · 英镑</option><option value="HKD">HKD · 港币</option><option value="SGD">SGD · 新加坡元</option><option value="AUD">AUD · 澳元</option><option value="CAD">CAD · 加元</option><option value="CHF">CHF · 瑞士法郎</option><option value="TWD">TWD · 新台币</option>
                             </select>
                             <div id="customRateWrapper" class="hidden mt-2 flex items-center gap-1.5 bg-gray-50 p-1.5 rounded-lg border">
                                 <span class="text-[10px] font-bold text-gray-400 pl-1">1 <span id="customRateLabel">USD</span> =</span>
@@ -76,17 +71,17 @@ input::-webkit-calendar-picker-indicator {
                         </div>
                     </div>
 
-                    <!-- 实时汇率 -->
-                    <div class="mt-5 pt-4 border-t border-gray-100">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mt-4">
                         <div class="flex items-center justify-between mb-3">
                             <p class="text-xs font-black text-gray-400 uppercase tracking-widest">
-                                <i class="fas fa-chart-area mr-1.5" style="color:#00BFA5"></i>实时汇率 (对 CNY)
+                                <i class="fas fa-chart-area mr-1.5" style="color:#00BFA5"></i>实时汇率 (1货币=多少人民币)
                             </p>
                             <div class="flex items-center gap-2">
                                 <span id="rateStatus" class="hidden text-[10px] bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
                                     <i class="fas fa-check mr-1"></i>已更新
                                 </span>
-                                <span class="text-[10px] text-gray-300 font-bold">FRANKFURTER API</span>
+                                <span id="rateRefreshTimer" class="text-[10px] text-gray-400 font-bold cursor-pointer"></span>
+                                <span class="text-[10px] text-gray-300 font-bold">EXCHANGERATE-API</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-5 gap-2" id="rateGrid"></div>
@@ -94,14 +89,30 @@ input::-webkit-calendar-picker-indicator {
                 </div>
 
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div class="flex justify-between items-center mb-4"><p class="field-label">② 时间信息</p><button id="toggleTimePrecision" class="text-[10px] text-gray-400 font-bold hover:text-[#00BFA5] transition-colors"><i class="fas fa-clock mr-1"></i>精确到时分</button></div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div><div class="field-label">交易日期</div><input type="date" id="tradeDate" class="field-input"></div>
-                        <div><div class="field-label">到期日期</div><input type="date" id="expiryDate" class="field-input"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="field-label">② 时间信息</p>
+                        <button id="toggleTimePrecision" class="text-[10px] text-gray-400 font-bold hover:text-[#00BFA5] transition-colors">
+                            <i class="fas fa-clock mr-1"></i>精确到时分
+                        </button>
                     </div>
-                    <div class="field-label">付款周期</div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <div class="field-label">交易日期</div>
+                            <input type="date" id="tradeDate" class="field-input date-input-nav">
+                        </div>
+                        <div>
+                            <div class="field-label">到期日期</div>
+                            <input type="date" id="expiryDate" class="field-input date-input-nav">
+                        </div>
+                    </div>
+                    <div class="field-label">付款周期（仅用于剩余天数比例计算）</div>
                     <div class="grid grid-cols-6 gap-2" id="cycleSelector">
-                        <button class="cycle-btn" data-cycle="30">月付</button><button class="cycle-btn" data-cycle="91">季付</button><button class="cycle-btn" data-cycle="182">半年</button><button class="cycle-btn active" data-cycle="365">年付</button><button class="cycle-btn" data-cycle="730">两年</button><button class="cycle-btn" data-cycle="1095">三年</button>
+                        <button class="cycle-btn" data-cycle="30">月付</button>
+                        <button class="cycle-btn" data-cycle="91">季付</button>
+                        <button class="cycle-btn" data-cycle="182">半年</button>
+                        <button class="cycle-btn active" data-cycle="365">年付</button>
+                        <button class="cycle-btn" data-cycle="730">两年</button>
+                        <button class="cycle-btn" data-cycle="1095">三年</button>
                     </div>
                 </div>
 
@@ -109,34 +120,73 @@ input::-webkit-calendar-picker-indicator {
                     <p class="field-label">③ 交易结算</p>
                     <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">实付卖家 (CNY)</div><input type="number" id="actualPaid" class="field-input" min="0"></div>
-                            <div><div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div><input type="number" id="premiumInput" class="field-input"></div>
+                            <div>
+                                <div class="text-[10px] font-black text-emerald-600 mb-1.5">实付卖家 (CNY)</div>
+                                <input type="number" id="actualPaid" class="field-input" min="0">
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div>
+                                <input type="number" id="premiumInput" class="field-input">
+                            </div>
                         </div>
-                        <div id="bindHint" class="text-[9px] text-emerald-700 font-bold mt-2.5"><i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价</div>
+                        <div id="bindHint" class="text-[9px] text-emerald-700 font-bold mt-2.5">
+                            <i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价
+                        </div>
                     </div>
-                    <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+
+                    <!-- 中介担保模块 -->
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-gray-500 bg-gray-50 group-hover:border-[#00BFA5] transition-colors">
+                                    <input type="checkbox" id="useMiddleman" class="peer sr-only">
+                                    <i class="fas fa-check text-[10px] text-[#00BFA5] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                </div>
+                                <span class="text-[11px] font-bold text-gray-400 group-hover:text-gray-800 transition-colors">开启中介担保</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="middlemanPercent" class="field-input !py-1 !w-16 !text-center" value="5" min="0" max="100">
+                                <span class="text-[11px] font-bold">%</span>
+                                <select id="middlemanPayer" class="bg-gray-50 border border-gray-200 text-gray-700 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
+                                    <option value="buyer">买家付中介</option>
+                                    <option value="seller">卖家付中介</option>
+                                    <option value="split">AA平摊中介</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2 mt-4">
                         <div class="text-[11px] font-bold text-gray-500">Push费</div>
                         <div class="flex gap-2 items-center ml-auto">
                             <input type="number" id="pushFee" class="field-input !py-1.5 !w-16 !bg-white" placeholder="0" min="0">
-                            <div class="csel-wrap"><button class="csel-btn" id="pushCurrBtn"><span id="pushCurrLabel">CNY</span> <i class="fas fa-chevron-down text-[8px]"></i></button><div class="csel-dropdown" id="pushCurrDropdown"></div></div>
-                            <select id="pushPayer" class="field-input !py-1.5 !w-20 !text-[11px] font-bold text-[#00BFA5] bg-white cursor-pointer"><option value="buyer">买家付</option><option value="seller">卖家付</option><option value="split">AA平摊</option></select>
+                            <div class="csel-wrap">
+                                <button class="csel-btn" id="pushCurrBtn">
+                                    <span id="pushCurrLabel">CNY</span> <i class="fas fa-chevron-down text-[8px]"></i>
+                                </button>
+                                <div class="csel-dropdown" id="pushCurrDropdown"></div>
+                            </div>
+                            <select id="pushPayer" class="field-input !py-1.5 !w-20 !text-[11px] font-bold text-[#00BFA5] bg-white cursor-pointer">
+                                <option value="buyer">买家付</option>
+                                <option value="seller">卖家付</option>
+                                <option value="split">AA平摊</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 右侧结果列 -->
             <div class="lg:col-span-5 lg:row-span-2">
                 <div class="sticky top-6 bg-white rounded-2xl overflow-hidden shadow-xl border-b-4 border-[#00BFA5] p-7">
                     <div class="text-center mb-6">
                         <p class="text-[#00BFA5] text-[10px] font-black tracking-widest mb-1">VPS 剩余价值 (CNY)</p>
                         <div id="resCNYBig" class="text-5xl font-black text-gray-800">¥ --</div>
                     </div>
-                    <div id="premiumBox" class="hidden text-center mb-6 border-t border-gray-200 pt-4">
+                    <div id="premiumBox" class="hidden text-center mb-6 border-t border-gray-100 pt-4">
                         <p id="premiumTitle" class="text-[10px] font-black mb-1">卖家溢价</p>
                         <div id="premiumValueBig" class="text-2xl font-black">--</div>
                     </div>
-                    <div class="space-y-2 border-t border-gray-200 pt-4">
+                    <div class="space-y-2 border-t border-gray-100 pt-4">
                         <div class="result-row"><span class="result-label">折合原币</span><span id="resOrig" class="result-value">--</span></div>
                         <div class="result-row"><span class="result-label">实付卖家</span><span id="resActual" class="result-value">¥ --</span></div>
                         <div id="middlemanRow" class="result-row hidden"><span class="result-label" id="middlemanRowLabel">买家中介费</span><span id="resMiddleman" class="result-value text-gray-400">¥ --</span></div>
@@ -144,22 +194,29 @@ input::-webkit-calendar-picker-indicator {
                         <div class="result-row border-none"><span class="result-label text-[#00BFA5]">综合日均</span><span id="dayActual" class="result-value text-[#00BFA5]">--</span></div>
                     </div>
                     
-                    <!-- 有效期进度条 -->
                     <div style="margin-top:24px">
                         <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:6px;">
-                            <span style="color:#64748b">剩余有效期</span>
+                            <span style="color:#475569">剩余有效期</span>
                             <span id="remainingDays" style="color:#00BFA5; font-size:14px; font-weight:900;">-- 天</span>
                         </div>
-                        <div style="background:#f1f5f9; border-radius:99px; height:6px; overflow:hidden">
+                        <div style="background:rgba(0,0,0,.07); border-radius:99px; height:6px; overflow:hidden">
                             <div id="remainingProgress" class="progress-bar" style="width:0%"></div>
                         </div>
-                        <div id="progressHint" style="text-align:right; font-size:10px; color:#64748b; font-weight:700; margin-top:4px;"></div>
+                        <div id="progressHint" style="text-align:right; font-size:10px; color:#475569; font-weight:700; margin-top:4px;"></div>
                     </div>
 
-                    <!-- 价值构成比例条 -->
-                    <div id="valueRatioBox" class="mt-5 pt-5 border-t border-gray-200 hidden">
+                    <!-- 买家最终总支出 已移动至此 -->
+                    <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-gray-50 border-gray-200 mt-5">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-[#94a3b8] transition-colors" id="finalCostLabel">买家最终总支出</span>
+                            <span id="extraFeeDetail" class="text-[9px] font-bold text-[#64748b] transition-colors">含额外支出 ¥ 0.00</span>
+                        </div>
+                        <div class="text-right font-black text-2xl text-gray-800 transition-colors" id="finalTotalCostDisplay">¥ --</div>
+                    </div>
+
+                    <div id="valueRatioBox" class="mt-5 pt-5 border-t border-gray-100 hidden">
                         <div class="flex justify-between text-[10px] font-black mb-1.5 uppercase text-gray-500"><span>价值构成比例</span></div>
-                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+                        <div class="h-3 bg-gray-100 rounded-full overflow-hidden flex">
                             <div id="barValue" class="h-full bg-[#00BFA5] transition-all duration-500" style="width:0%"></div>
                             <div id="barPremium" class="h-full bg-orange-400 transition-all duration-500" style="width:0%"></div>
                         </div>
@@ -169,34 +226,9 @@ input::-webkit-calendar-picker-indicator {
                         </div>
                     </div>
 
-                    <!-- 统一结算模块 -->
-                    <div class="mt-6 pt-5 border-t border-gray-200">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-gray-300 bg-gray-50 group-hover:border-[#00BFA5] transition-colors">
-                                    <input type="checkbox" id="useMiddleman" class="peer sr-only">
-                                    <i class="fas fa-check text-[10px] text-[#00BFA5] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                                </div>
-                                <span class="text-[11px] font-bold text-gray-600 group-hover:text-gray-800 transition-colors">开启中介担保 (5%)</span>
-                            </label>
-                            <select id="middlemanPayer" class="bg-gray-50 border border-gray-300 text-gray-700 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
-                                <option value="buyer">买家付中介</option><option value="seller">卖家付中介</option><option value="split">AA平摊中介</option>
-                            </select>
-                        </div>
-                        
-                        <!-- 买家最终总支出卡片 -->
-                        <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-gray-50 border-gray-200">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] font-black uppercase tracking-wider text-gray-600 transition-colors" id="finalCostLabel">买家最终总支出</span>
-                                <span id="extraFeeDetail" class="text-[9px] font-bold text-gray-500 transition-colors">含额外支出 ¥ 0.00</span>
-                            </div>
-                            <div class="text-right font-black text-2xl text-gray-800 transition-colors" id="finalTotalCostDisplay">¥ --</div>
-                        </div>
-                    </div>
-
                     <div class="flex gap-2 mt-6">
-                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm text-white shadow-lg hover:scale-[1.02] transition-all"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
-                        <button id="shareBtn" class="px-5 bg-gray-700 rounded-xl font-black text-sm text-white hover:scale-[1.02] transition-all"><i class="fas fa-link"></i></button>
+                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm shadow-lg hover:scale-[1.02] transition-all text-white"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
+                        <button id="shareBtn" class="px-5 bg-gray-700 rounded-xl font-black text-sm hover:scale-[1.02] transition-all text-white"><i class="fas fa-link"></i></button>
                         <button id="resetBtn" class="px-5 bg-red-500/10 text-red-500 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-rotate-right"></i></button>
                     </div>
                 </div>
@@ -206,52 +238,99 @@ input::-webkit-calendar-picker-indicator {
 
     <script>
         let cycleDays = 365, isDateTime = false, lastInput = 'actualPaid', toastTimer = null;
-        let rates = { USD:7.23, EUR:7.82, GBP:9.12, JPY:0.047, HKD:0.92, TWD:0.23, KRW:0.005, SGD:5.38, AUD:4.75, CAD:5.32, CNY:1 };
-        
+        let rates = { USD:7.23, EUR:7.82, GBP:9.12, HKD:0.92, SGD:5.38, AUD:4.75, CAD:5.32, CHF:8.1, TWD:0.23, CNY:1 };
+        const RATE_CACHE_MINUTES = 60;
+        let rateRefreshInterval = null;
+
         const fmt = (n, d=2) => n.toFixed(d);
         const getEl = id => document.getElementById(id);
 
         const getLocalISO = (d, isDT) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, isDT ? 16 : 10);
 
+        // 日期输入框内部自动跳转：年→月→日（只在当前框内，不跳其他输入）
+        function initDateNav() {
+            document.querySelectorAll('.date-input-nav').forEach(input => {
+                input.addEventListener('input', function(e) {
+                    const val = this.value;
+                    const type = this.type;
+                    if (type === 'date') {
+                        if (val.length === 4) setTimeout(() => this.seekForward(), 10);
+                        if (val.length === 7) setTimeout(() => this.seekForward(), 10);
+                    }
+                    if (type === 'datetime-local') {
+                        if (val.length === 4) setTimeout(() => this.seekForward(), 10);
+                        if (val.length === 7) setTimeout(() => this.seekForward(), 10);
+                        if (val.length === 10) setTimeout(() => this.seekForward(), 10);
+                        if (val.length === 13) setTimeout(() => this.seekForward(), 10);
+                    }
+                });
+            });
+        }
+
         function renderRateGrid() {
             const grid = getEl('rateGrid');
             grid.innerHTML = '';
-            ['USD', 'EUR', 'GBP', 'JPY', 'HKD', 'TWD', 'KRW', 'SGD', 'AUD', 'CAD'].forEach(curr => {
-                const rate = rates[curr];
+            const currencyList = [
+                { code: 'CNY', name: '人民币' },{ code: 'USD', name: '美元' },{ code: 'EUR', name: '欧元' },
+                { code: 'GBP', name: '英镑' },{ code: 'HKD', name: '港币' },{ code: 'SGD', name: '新加坡元' },
+                { code: 'AUD', name: '澳元' },{ code: 'CAD', name: '加元' },{ code: 'CHF', name: '瑞士法郎' },
+                { code: 'TWD', name: '新台币' }
+            ];
+            
+            currencyList.forEach(c => {
+                const rate = rates[c.code];
                 if(!rate) return;
-                const isTwd = curr === 'TWD';
+                const isCny = c.code === 'CNY';
                 grid.innerHTML += `
-                    <div class="text-center p-2 rounded-xl border flex flex-col justify-center items-center ${isTwd ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
+                    <div class="text-center p-2 rounded-xl border flex flex-col justify-center items-center ${isCny ? 'border-green-200 bg-green-50' : 'border-slate-100 bg-slate-50'}">
                         <div class="flex items-center gap-1">
-                            <span class="text-[9px] font-black tracking-wider ${isTwd ? 'text-amber-600' : 'text-slate-400'}">${curr}</span>
-                            ${isTwd ? '<span class="text-[8px] bg-amber-300 text-amber-900 px-1 rounded scale-90 whitespace-nowrap">非实时</span>' : ''}
+                            <span class="text-[9px] font-black tracking-wider font-bold ${isCny ? 'text-green-600' : 'text-slate-400'}">${c.code} · ${c.name}</span>
                         </div>
-                        <div class="text-[11px] font-extrabold text-slate-700 mt-1">${rate.toFixed((curr === 'JPY' || curr === 'KRW') ? 4 : 3)}</div>
+                        <div class="text-[11px] font-extrabold text-slate-700 mt-1">${isCny ? '1.000' : rate.toFixed(3)}</div>
                     </div>`;
             });
         }
 
-        async function fetchLiveRates() {
+        function startRateRefreshTimer() {
+            clearInterval(rateRefreshInterval);
+            const updateTimer = () => {
+                const cache = JSON.parse(localStorage.getItem('rateCache'));
+                if (!cache) { getEl('rateRefreshTimer').innerText = '已缓存'; return; }
+                const now = Date.now();
+                const expire = cache.timestamp + RATE_CACHE_MINUTES * 60 * 1000;
+                const left = Math.max(0, expire - now);
+                const min = Math.floor(left / 60000);
+                const sec = Math.floor((left % 60000) / 1000);
+                getEl('rateRefreshTimer').innerText = `${min}分${sec}秒`;
+                if (left <= 0) fetchLiveRates(true);
+            };
+            updateTimer();
+            rateRefreshInterval = setInterval(updateTimer, 1000);
+        }
+
+        async function fetchLiveRates(force = false) {
             try {
-                const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=CNY,EUR,GBP,JPY,HKD,KRW,SGD,AUD,CAD');
+                const cache = JSON.parse(localStorage.getItem('rateCache'));
+                if (!force && cache && (Date.now() - cache.timestamp) < RATE_CACHE_MINUTES * 60 * 1000) {
+                    rates = cache.data; renderRateGrid(); calculate(); startRateRefreshTimer(); return;
+                }
+                const res = await fetch('https://v6.exchangerate-api.com/v6/416fc7318db286baaf635434/latest/USD');
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                const u2c = data.rates.CNY;
-                Object.assign(rates, { 
-                    USD: u2c, EUR: u2c / data.rates.EUR, GBP: u2c / data.rates.GBP, 
-                    JPY: u2c / data.rates.JPY, HKD: u2c / data.rates.HKD, KRW: u2c / data.rates.KRW, 
-                    SGD: u2c / data.rates.SGD, AUD: u2c / data.rates.AUD, CAD: u2c / data.rates.CAD 
+                const usdToCny = data.conversion_rates.CNY;
+                
+                Object.assign(rates, {
+                    USD: usdToCny, EUR: usdToCny / data.conversion_rates.EUR, GBP: usdToCny / data.conversion_rates.GBP,
+                    HKD: usdToCny / data.conversion_rates.HKD, SGD: usdToCny / data.conversion_rates.SGD, AUD: usdToCny / data.conversion_rates.AUD,
+                    CAD: usdToCny / data.conversion_rates.CAD, CHF: usdToCny / data.conversion_rates.CHF, TWD: usdToCny / data.conversion_rates.TWD
                 });
+                
+                localStorage.setItem('rateCache', JSON.stringify({ timestamp: Date.now(), data: rates }));
                 const badge = getEl('rateStatus');
                 badge.classList.remove('hidden');
-            } catch(e) {
-                console.error('汇率获取失败:', e);
-                const badge = getEl('rateStatus');
-                badge.textContent = '汇率获取失败，使用默认汇率';
-                badge.classList.remove('hidden');
-            }
-            renderRateGrid();
-            calculate();
+                setTimeout(() => badge.classList.add('hidden'), 3000);
+            } catch(e) { console.error('汇率获取失败:', e); }
+            renderRateGrid(); calculate(); startRateRefreshTimer();
         }
 
         function calculate() {
@@ -261,12 +340,8 @@ input::-webkit-calendar-picker-indicator {
             const customToggleBox = getEl('customRateToggleBox');
             const customToggle = getEl('useCustomRate');
             const customWrap = getEl('customRateWrapper');
-            if(curr === 'CNY') {
-                customToggle.checked = false;
-                customToggleBox.style.display = 'none';
-            } else {
-                customToggleBox.style.display = 'flex';
-            }
+            if(curr === 'CNY') { customToggle.checked = false; customToggleBox.style.display = 'none'; } 
+            else { customToggleBox.style.display = 'flex'; }
             customWrap.classList.toggle('hidden', !customToggle.checked);
 
             const amount = parseFloat(getEl('renewalAmount').value);
@@ -289,14 +364,16 @@ input::-webkit-calendar-picker-indicator {
 
             const isMiddleman = getEl('useMiddleman').checked;
             const middlemanPayer = getEl('middlemanPayer').value;
+            const middlemanPercent = parseFloat(getEl('middlemanPercent').value) || 0;
+            const middlemanRate = middlemanPercent / 100;
 
             if(lastInput === 'actualPaid') {
                 if(actPaidStr === '') { getEl('premiumInput').value = ''; prem = NaN; }
                 else if(!isNaN(actPaid)) { 
                     let sMid = 0;
                     if (isMiddleman) {
-                        if (middlemanPayer === 'seller') sMid = actPaid * 0.05;
-                        else if (middlemanPayer === 'split') sMid = actPaid * 0.025;
+                        if (middlemanPayer === 'seller') sMid = actPaid * middlemanRate;
+                        else if (middlemanPayer === 'split') sMid = actPaid * middlemanRate / 2;
                     }
                     prem = (actPaid - sPush - sMid) - resCNY; 
                     getEl('premiumInput').value = fmt(prem); 
@@ -304,8 +381,8 @@ input::-webkit-calendar-picker-indicator {
             } else {
                 if(premStr === '') { getEl('actualPaid').value = ''; actPaid = NaN; }
                 else if(!isNaN(prem)) { 
-                    if (isMiddleman && middlemanPayer === 'seller') actPaid = (resCNY + prem + sPush) / 0.95;
-                    else if (isMiddleman && middlemanPayer === 'split') actPaid = (resCNY + prem + sPush) / 0.975;
+                    if (isMiddleman && middlemanPayer === 'seller') actPaid = (resCNY + prem + sPush) / (1 - middlemanRate);
+                    else if (isMiddleman && middlemanPayer === 'split') actPaid = (resCNY + prem + sPush) / (1 - middlemanRate / 2);
                     else actPaid = resCNY + prem + sPush;
                     getEl('actualPaid').value = fmt(actPaid); 
                 }
@@ -314,7 +391,7 @@ input::-webkit-calendar-picker-indicator {
             let middlemanFee = 0;
             let bMid = 0;
             if (isMiddleman && !isNaN(actPaid) && actPaid > 0) {
-                middlemanFee = actPaid * 0.05;
+                middlemanFee = actPaid * middlemanRate;
                 if (middlemanPayer === 'buyer') bMid = middlemanFee;
                 else if (middlemanPayer === 'split') bMid = middlemanFee / 2;
             }
@@ -331,35 +408,33 @@ input::-webkit-calendar-picker-indicator {
             
             if(!isNaN(actPaid) && actPaid >= 0) {
                 getEl('resActual').innerText = `¥ ${fmt(actPaid)}`;
-                
                 getEl('middlemanRow').classList.toggle('hidden', bMid <= 0);
                 getEl('resMiddleman').innerText = `+ ¥ ${fmt(bMid)}`;
                 
                 getEl('premiumBox').classList.remove('hidden');
                 getEl('premiumTitle').innerText = prem >=0 ? '卖家溢价' : '卖家折价';
-                getEl('premiumTitle').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
+                getEl('premiumTitle').style.color = prem >=0 ? '#fbbf24' : '#10b981';
                 getEl('premiumValueBig').innerText = `${prem>=0?'+':''}¥ ${fmt(prem)}`;
-                getEl('premiumValueBig').style.color = prem >=0 ? '#fbbf24' : '#4ade80';
+                getEl('premiumValueBig').style.color = prem >=0 ? '#fbbf24' : '#10b981';
                 
                 getEl('dayActual').innerText = `¥${fmt(totalBuyerCost/days, 3)} / 天`;
                 
                 const finalBox = getEl('finalCostBox');
                 const extraFee = bPush + bMid;
-                
                 getEl('finalTotalCostDisplay').innerText = `¥ ${fmt(totalBuyerCost)}`;
                 getEl('extraFeeDetail').innerText = extraFee > 0 ? `额外支出 (Push/中介) + ¥ ${fmt(extraFee)}` : '无额外买家支出';
                 
                 if (extraFee > 0) {
-                    finalBox.style.backgroundColor = "rgba(0,191,165,0.05)";
-                    finalBox.style.borderColor = "rgba(0,191,165,0.2)";
+                    finalBox.style.backgroundColor = "rgba(0,191,165,0.08)";
+                    finalBox.style.borderColor = "rgba(0,191,165,0.3)";
                     getEl('finalTotalCostDisplay').style.color = "#00BFA5";
                     getEl('finalCostLabel').style.color = "#00BFA5";
                     getEl('extraFeeDetail').style.color = "#00BFA5";
                 } else {
-                    finalBox.style.backgroundColor = "#f8fafc";
-                    finalBox.style.borderColor = "#e2e8f0";
-                    getEl('finalTotalCostDisplay').style.color = "#1e293b";
-                    getEl('finalCostLabel').style.color = "#64748b";
+                    finalBox.style.backgroundColor = "rgb(249,250,251)";
+                    finalBox.style.borderColor = "rgb(229,231,235)";
+                    getEl('finalTotalCostDisplay').style.color = "#1f2937";
+                    getEl('finalCostLabel').style.color = "#94a3b8";
                     getEl('extraFeeDetail').style.color = "#64748b";
                 }
                 
@@ -377,9 +452,12 @@ input::-webkit-calendar-picker-indicator {
                 
                 getEl('finalTotalCostDisplay').innerText = '¥ --';
                 getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
+                getEl('finalTotalCostDisplay').style.color = "#1f2937";
+                getEl('finalCostLabel').style.color = "#94a3b8";
+                getEl('extraFeeDetail').style.color = "#64748b";
                 if(getEl('finalCostBox')) {
-                    getEl('finalCostBox').style.backgroundColor = "#f8fafc";
-                    getEl('finalCostBox').style.borderColor = "#e2e8f0";
+                    getEl('finalCostBox').style.backgroundColor = "rgb(249,250,251)";
+                    getEl('finalCostBox').style.borderColor = "rgb(229,231,235)";
                 }
             }
             getEl('dayOfficial').innerText = `¥${fmt(resCNY/days, 3)} / 天`;
@@ -400,38 +478,41 @@ input::-webkit-calendar-picker-indicator {
             getEl('middlemanRow').classList.add('hidden');
             getEl('finalTotalCostDisplay').innerText = '¥ --';
             getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
+            getEl('finalTotalCostDisplay').style.color = "#1f2937";
+            getEl('finalCostLabel').style.color = "#94a3b8";
+            getEl('extraFeeDetail').style.color = "#64748b";
             if(getEl('finalCostBox')) {
-                getEl('finalCostBox').style.backgroundColor = "#f8fafc";
-                getEl('finalCostBox').style.borderColor = "#e2e8f0";
+                getEl('finalCostBox').style.backgroundColor = "rgb(249,250,251)";
+                getEl('finalCostBox').style.borderColor = "rgb(229,231,235)";
             }
         }
 
         window.onload = () => {
             renderRateGrid(); 
             fetchLiveRates();
+            initDateNav(); // 启用日期导航
             
             const today = new Date();
-            let tradeStr = getLocalISO(today, false);
-            getEl('tradeDate').value = tradeStr;
-            today.setDate(today.getDate() + cycleDays);
-            getEl('expiryDate').value = getLocalISO(today, false);
-            
+            getEl('tradeDate').value = getLocalISO(today, false);
+            const halfYearLater = new Date(today);
+            halfYearLater.setDate(today.getDate() + 182);
+            getEl('expiryDate').value = getLocalISO(halfYearLater, false);
+
             document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays));
 
             const dd = getEl('pushCurrDropdown');
-            ['CNY', 'USD'].forEach(c => {
+            Object.keys(rates).forEach(c => {
                 const opt = document.createElement('div'); opt.className='csel-option'; opt.innerText=c;
                 opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
                 dd.appendChild(opt);
             });
 
-            // 自动聚焦续费金额，有数值则清空
-            const renewalInput = getEl('renewalAmount');
-            renewalInput.focus();
-            if (renewalInput.value) {
-                renewalInput.value = '';
-                calculate();
-            }
+            getEl('rateRefreshTimer').onclick = () => {
+                fetchLiveRates(true);
+                showToast('已强制刷新汇率');
+            };
+
+            getEl('renewalAmount').focus();
         };
 
         getEl('pushCurrBtn').onclick = (e) => { e.stopPropagation(); getEl('pushCurrDropdown').classList.toggle('open'); };
@@ -439,75 +520,69 @@ input::-webkit-calendar-picker-indicator {
         getEl('actualPaid').onfocus = () => { lastInput = 'actualPaid'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价'; };
         getEl('premiumInput').onfocus = () => { lastInput = 'premiumInput'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【卖家溢价】推算实付'; };
         
-        ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','useCustomRate','customRateInput','useMiddleman','middlemanPayer'].forEach(id => {
-            getEl(id).onchange = calculate; getEl(id).oninput = calculate;
+        // 全量自动计算绑定
+        ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput',
+         'useCustomRate','customRateInput','pushFee','pushPayer','useMiddleman','middlemanPayer','middlemanPercent'].forEach(id => {
+            const el = getEl(id);
+            el.onchange = calculate;
+            el.oninput = calculate;
         });
 
+        // 周期选择
         document.querySelectorAll('.cycle-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelector('.cycle-btn.active').classList.remove('active');
-                btn.classList.add('active'); cycleDays = parseInt(btn.dataset.cycle);
-                const d = new Date(getEl('tradeDate').value); d.setDate(d.getDate() + cycleDays);
-                getEl('expiryDate').value = getLocalISO(d, isDateTime);
+                btn.classList.add('active');
+                cycleDays = parseInt(btn.dataset.cycle);
                 calculate();
             };
         });
 
+        // 时间精度切换
         getEl('toggleTimePrecision').onclick = () => {
-            isDateTime = !isDateTime; getEl('toggleTimePrecision').classList.toggle('text-[#00BFA5]', isDateTime);
-            let tVal = getEl('tradeDate').value, eVal = getEl('expiryDate').value;
+            isDateTime = !isDateTime;
+            getEl('toggleTimePrecision').classList.toggle('text-[#00BFA5]', isDateTime);
             getEl('tradeDate').type = isDateTime ? 'datetime-local' : 'date'; 
             getEl('expiryDate').type = isDateTime ? 'datetime-local' : 'date';
-            
-            if(isDateTime) {
-                if(tVal && tVal.length === 10) getEl('tradeDate').value = tVal + 'T00:00';
-                if(eVal && eVal.length === 10) getEl('expiryDate').value = eVal + 'T00:00';
-            } else {
-                if(tVal && tVal.length > 10) getEl('tradeDate').value = tVal.slice(0, 10);
-                if(eVal && eVal.length > 10) getEl('expiryDate').value = eVal.slice(0, 10);
-            }
             calculate();
         };
 
-        // 复制详情
+        // 复制/分享/重置
         getEl('copyBtn').onclick = () => { 
             let midText = '';
             if (getEl('useMiddleman').checked) {
                 let actP = parseFloat(getEl('actualPaid').value) || 0;
-                let midVal = actP * 0.05;
+                let pct = parseFloat(getEl('middlemanPercent').value) || 0;
+                let midVal = actP * (pct / 100);
                 if (getEl('middlemanPayer').value === 'buyer') {
-                    midText = `\n买家付中介: ¥${fmt(midVal)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                    midText = `\n买家付中介(${pct}%): ¥${fmt(midVal)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
                 } else if (getEl('middlemanPayer').value === 'split') {
-                    midText = `\nAA平摊中介: ¥${fmt(midVal / 2)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                    midText = `\nAA平摊中介(${pct}%): ¥${fmt(midVal / 2)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
                 } else {
-                    midText = `\n卖家扣中介: -¥${fmt(midVal)}\n买家总支出: ${getEl('finalTotalCostDisplay').innerText}`;
+                    midText = `\n卖家扣中介(${pct}%): -¥${fmt(midVal)}\n买家总支出: ${getEl('finalTotalCostDisplay').innerText}`;
                 }
             }
             const text = `【VPS 剩余价值详情】\n剩余价值: ${getEl('resCNYBig').innerText}\n有效期: ${getEl('remainingDays').innerText}\n实付卖家: ${getEl('resActual').innerText}${midText}\n综合日均: ${getEl('dayActual').innerText}`;
             navigator.clipboard.writeText(text); showToast('详情已复制');
         };
         
-        // 分享链接
         getEl('shareBtn').onclick = () => { 
             const p = new URLSearchParams();
             ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
                 const v = getEl(id).value; if(v !== '') p.set(id, v);
             });
-            p.set('cycleDays', cycleDays); p.set('lastInput', lastInput); p.set('pushCurrency', getEl('pushCurrLabel').innerText);
+            p.set('cycleDays', cycleDays);
+            p.set('lastInput', lastInput);
+            p.set('pushCurrency', getEl('pushCurrLabel').innerText);
             if(isDateTime) p.set('isDateTime', '1');
-            if(getEl('useCustomRate').checked) {
-                p.set('useCustomRate', '1');
-                if(getEl('customRateInput').value !== '') p.set('customRateInput', getEl('customRateInput').value);
-            }
-            if(getEl('useMiddleman').checked) p.set('useMiddleman', '1');
+            if(getEl('useCustomRate').checked) { p.set('useCustomRate', '1'); p.set('customRateInput', getEl('customRateInput').value); }
+            if(getEl('useMiddleman').checked) { p.set('useMiddleman', '1'); p.set('middlemanPercent', getEl('middlemanPercent').value); }
             const shareUrl = window.location.origin + window.location.pathname + '?' + p.toString();
             navigator.clipboard.writeText(shareUrl); 
             showToast('状态专属链接已生成并复制'); 
         };
         
-        // 重置
         getEl('resetBtn').onclick = () => { window.location.href = window.location.origin + window.location.pathname; };
-        getEl('useCustomRate').onchange = calculate;
 
         function showToast(m) { 
             clearTimeout(toastTimer); const t = getEl('toast'); getEl('toastMsg').innerText = m; 
