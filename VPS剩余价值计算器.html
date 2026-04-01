@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400,500,700,900&display=swap');
         body { background: #eef2f7; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cycle-btn { transition: all .15s; border: 1.5px solid #e2e8f0; background: white; color: #94a3b8; font-weight: 700; font-size: 12px; border-radius: 10px; padding: 8px 0; cursor: pointer; width: 100%; }
@@ -15,7 +15,6 @@
         .field-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px; }
         .field-input { width: 100%; padding: 11px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all .15s; }
         .field-input:focus { border-color: #00BFA5; background: white; }
-        .core-input { @apply field-input; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.07); }
         .result-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
         .result-value { font-size: 13px; font-weight: 800; color: #1e293b; }
@@ -31,14 +30,14 @@
         #rateRefreshTimer { cursor: pointer; user-select: none; }
         input[type="date"] {
             padding-left: 10px !important;
-            padding-right: 4px !important; 
-            letter-spacing: -0.5px !important; 
-            min-width: 0; 
+            padding-right: 4px !important;
+            letter-spacing: -0.5px !important;
+            min-width: 0;
         }
         input::-webkit-calendar-picker-indicator {
             margin-left: 0px !important;
             padding: 0px !important;
-            width: 16px !important; 
+            width: 16px !important;
             cursor: pointer;
         }
     </style>
@@ -126,51 +125,8 @@
                             </div>
                             <div>
                                 <div class="text-[10px] font-black text-emerald-600 mb-1.5">卖家溢价 (CNY)</div>
-                                <input type="number" id="premiumInput" class="field-input">
+                                <input type="number" id="premiumInput" class="field-input" value="0">
                             </div>
-                        </div>
-                        <div id="bindHint" class="text-[9px] text-emerald-700 font-bold mt-2.5">
-                            <i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价
-                        </div>
-                    </div>
-
-                    <!-- 中介担保模块 -->
-                    <div class="mt-4 pt-4 border-t border-gray-100">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <div class="relative flex items-center justify-center w-4 h-4 rounded border border-gray-500 bg-gray-50 group-hover:border-[#00BFA5] transition-colors">
-                                    <input type="checkbox" id="useMiddleman" class="peer sr-only">
-                                    <i class="fas fa-check text-[10px] text-[#00BFA5] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
-                                </div>
-                                <span class="text-[11px] font-bold text-gray-400 group-hover:text-gray-800 transition-colors">开启中介担保</span>
-                            </label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="middlemanPercent" class="field-input !py-1 !w-16 !text-center" value="5" min="0" max="100">
-                                <span class="text-[11px] font-bold">%</span>
-                                <select id="middlemanPayer" class="bg-gray-50 border border-gray-200 text-gray-700 text-[9px] font-bold rounded px-1 py-0.5 outline-none cursor-pointer hover:border-[#00BFA5] transition-colors">
-                                    <option value="buyer">买家付中介</option>
-                                    <option value="seller">卖家付中介</option>
-                                    <option value="split">AA平摊中介</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2 mt-4">
-                        <div class="text-[11px] font-bold text-gray-500">Push费</div>
-                        <div class="flex gap-2 items-center ml-auto">
-                            <input type="number" id="pushFee" class="field-input !py-1.5 !w-16 !bg-white" placeholder="0" min="0">
-                            <div class="csel-wrap">
-                                <button class="csel-btn" id="pushCurrBtn">
-                                    <span id="pushCurrLabel">CNY</span> <i class="fas fa-chevron-down text-[8px]"></i>
-                                </button>
-                                <div class="csel-dropdown" id="pushCurrDropdown"></div>
-                            </div>
-                            <select id="pushPayer" class="field-input !py-1.5 !w-20 !text-[11px] font-bold text-[#00BFA5] bg-white cursor-pointer">
-                                <option value="buyer">买家付</option>
-                                <option value="seller">卖家付</option>
-                                <option value="split">AA平摊</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -179,7 +135,7 @@
             <div class="lg:col-span-5 lg:row-span-2">
                 <div class="sticky top-6 bg-white rounded-2xl overflow-hidden shadow-xl border-b-4 border-[#00BFA5] p-7">
                     <div class="text-center mb-6">
-                        <p class="text-[#00BFA5] text-[10px] font-black tracking-widest mb-1">VPS 剩余价值 (CNY)</p>
+                        <p class="text-[#00BFA5] text-[10px] font-black tracking-widest mb-1">买家最终总支出 (CNY)</p>
                         <div id="resCNYBig" class="text-5xl font-black text-gray-800">¥ --</div>
                     </div>
                     <div id="premiumBox" class="hidden text-center mb-6 border-t border-gray-100 pt-4">
@@ -189,7 +145,6 @@
                     <div class="space-y-2 border-t border-gray-100 pt-4">
                         <div class="result-row"><span class="result-label">折合原币</span><span id="resOrig" class="result-value">--</span></div>
                         <div class="result-row"><span class="result-label">实付卖家</span><span id="resActual" class="result-value">¥ --</span></div>
-                        <div id="middlemanRow" class="result-row hidden"><span class="result-label" id="middlemanRowLabel">买家中介费</span><span id="resMiddleman" class="result-value text-gray-400">¥ --</span></div>
                         <div class="result-row"><span class="result-label">官方日均</span><span id="dayOfficial" class="result-value">--</span></div>
                         <div class="result-row border-none"><span class="result-label text-[#00BFA5]">综合日均</span><span id="dayActual" class="result-value text-[#00BFA5]">--</span></div>
                     </div>
@@ -203,15 +158,6 @@
                             <div id="remainingProgress" class="progress-bar" style="width:0%"></div>
                         </div>
                         <div id="progressHint" style="text-align:right; font-size:10px; color:#475569; font-weight:700; margin-top:4px;"></div>
-                    </div>
-
-                    <!-- 买家最终总支出 已移动至此 -->
-                    <div id="finalCostBox" class="rounded-xl p-4 border transition-all duration-300 bg-gray-50 border-gray-200 mt-5">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-[#94a3b8] transition-colors" id="finalCostLabel">买家最终总支出</span>
-                            <span id="extraFeeDetail" class="text-[9px] font-bold text-[#64748b] transition-colors">含额外支出 ¥ 0.00</span>
-                        </div>
-                        <div class="text-right font-black text-2xl text-gray-800 transition-colors" id="finalTotalCostDisplay">¥ --</div>
                     </div>
 
                     <div id="valueRatioBox" class="mt-5 pt-5 border-t border-gray-100 hidden">
@@ -237,32 +183,21 @@
     </div>
 
     <script>
-        let cycleDays = 365, isDateTime = false, lastInput = 'actualPaid', toastTimer = null;
+        let cycleDays = 365, isDateTime = false, toastTimer = null;
         let rates = { USD:7.23, EUR:7.82, GBP:9.12, HKD:0.92, SGD:5.38, AUD:4.75, CAD:5.32, CHF:8.1, TWD:0.23, CNY:1 };
         const RATE_CACHE_MINUTES = 60;
         let rateRefreshInterval = null;
 
         const fmt = (n, d=2) => n.toFixed(d);
         const getEl = id => document.getElementById(id);
-
         const getLocalISO = (d, isDT) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, isDT ? 16 : 10);
 
-        // 日期输入框内部自动跳转：年→月→日（只在当前框内，不跳其他输入）
         function initDateNav() {
             document.querySelectorAll('.date-input-nav').forEach(input => {
                 input.addEventListener('input', function(e) {
                     const val = this.value;
-                    const type = this.type;
-                    if (type === 'date') {
-                        if (val.length === 4) setTimeout(() => this.seekForward(), 10);
-                        if (val.length === 7) setTimeout(() => this.seekForward(), 10);
-                    }
-                    if (type === 'datetime-local') {
-                        if (val.length === 4) setTimeout(() => this.seekForward(), 10);
-                        if (val.length === 7) setTimeout(() => this.seekForward(), 10);
-                        if (val.length === 10) setTimeout(() => this.seekForward(), 10);
-                        if (val.length === 13) setTimeout(() => this.seekForward(), 10);
-                    }
+                    if (val.length === 4) setTimeout(() => this.seekForward(), 10);
+                    if (val.length === 7) setTimeout(() => this.seekForward(), 10);
                 });
             });
         }
@@ -353,51 +288,17 @@
             let rate = rates[curr] || 1;
             if(customToggle.checked) rate = parseFloat(getEl('customRateInput').value) || rate;
             
-            const resOrig = (amount / cycleDays) * days, resCNY = resOrig * rate;
-            const push = (parseFloat(getEl('pushFee').value)||0) * (rates[getEl('pushCurrLabel').innerText] || 1);
-            const payer = getEl('pushPayer').value;
-            const bPush = payer==='buyer'?push : (payer==='split'?push/2:0), sPush = payer==='seller'?push : (payer==='split'?push/2:0);
+            const resOrig = (amount / cycleDays) * days;
+            const resCNY = resOrig * rate;
 
-            let actPaidStr = getEl('actualPaid').value;
-            let premStr = getEl('premiumInput').value;
-            let actPaid = parseFloat(actPaidStr), prem = parseFloat(premStr);
+            let actPaid = parseFloat(getEl('actualPaid').value) || 0;
+            let prem = actPaid - resCNY;
 
-            const isMiddleman = getEl('useMiddleman').checked;
-            const middlemanPayer = getEl('middlemanPayer').value;
-            const middlemanPercent = parseFloat(getEl('middlemanPercent').value) || 0;
-            const middlemanRate = middlemanPercent / 100;
+            getEl('premiumInput').value = fmt(prem);
+            
+            const totalBuyerCost = actPaid;
 
-            if(lastInput === 'actualPaid') {
-                if(actPaidStr === '') { getEl('premiumInput').value = ''; prem = NaN; }
-                else if(!isNaN(actPaid)) { 
-                    let sMid = 0;
-                    if (isMiddleman) {
-                        if (middlemanPayer === 'seller') sMid = actPaid * middlemanRate;
-                        else if (middlemanPayer === 'split') sMid = actPaid * middlemanRate / 2;
-                    }
-                    prem = (actPaid - sPush - sMid) - resCNY; 
-                    getEl('premiumInput').value = fmt(prem); 
-                }
-            } else {
-                if(premStr === '') { getEl('actualPaid').value = ''; actPaid = NaN; }
-                else if(!isNaN(prem)) { 
-                    if (isMiddleman && middlemanPayer === 'seller') actPaid = (resCNY + prem + sPush) / (1 - middlemanRate);
-                    else if (isMiddleman && middlemanPayer === 'split') actPaid = (resCNY + prem + sPush) / (1 - middlemanRate / 2);
-                    else actPaid = resCNY + prem + sPush;
-                    getEl('actualPaid').value = fmt(actPaid); 
-                }
-            }
-
-            let middlemanFee = 0;
-            let bMid = 0;
-            if (isMiddleman && !isNaN(actPaid) && actPaid > 0) {
-                middlemanFee = actPaid * middlemanRate;
-                if (middlemanPayer === 'buyer') bMid = middlemanFee;
-                else if (middlemanPayer === 'split') bMid = middlemanFee / 2;
-            }
-            const totalBuyerCost = actPaid + bPush + bMid;
-
-            getEl('resCNYBig').innerText = `¥ ${fmt(resCNY)}`;
+            getEl('resCNYBig').innerText = `¥ ${fmt(totalBuyerCost)}`;
             getEl('resOrig').innerText = `${fmt(resOrig)} ${curr}`;
             
             const pct = Math.min((days / cycleDays) * 100, 100);
@@ -406,61 +307,31 @@
             getEl('remainingProgress').style.width = `${pct}%`;
             getEl('progressHint').innerText = `剩余 ${pct.toFixed(1)}% 周期`;
             
-            if(!isNaN(actPaid) && actPaid >= 0) {
+            if(!isNaN(actPaid)) {
                 getEl('resActual').innerText = `¥ ${fmt(actPaid)}`;
-                getEl('middlemanRow').classList.toggle('hidden', bMid <= 0);
-                getEl('resMiddleman').innerText = `+ ¥ ${fmt(bMid)}`;
                 
                 getEl('premiumBox').classList.remove('hidden');
-                getEl('premiumTitle').innerText = prem >=0 ? '卖家溢价' : '卖家折价';
-                getEl('premiumTitle').style.color = prem >=0 ? '#fbbf24' : '#10b981';
-                getEl('premiumValueBig').innerText = `${prem>=0?'+':''}¥ ${fmt(prem)}`;
-                getEl('premiumValueBig').style.color = prem >=0 ? '#fbbf24' : '#10b981';
+                getEl('premiumTitle').innerText = prem >= 0 ? '卖家溢价' : '卖家折价';
+                getEl('premiumValueBig').innerText = `${prem >= 0 ? '+' : ''}¥ ${fmt(prem)}`;
+                getEl('premiumValueBig').className = prem >= 0 
+                    ? "text-2xl font-black text-red-500" 
+                    : "text-2xl font-black text-green-500";
                 
-                getEl('dayActual').innerText = `¥${fmt(totalBuyerCost/days, 3)} / 天`;
-                
-                const finalBox = getEl('finalCostBox');
-                const extraFee = bPush + bMid;
-                getEl('finalTotalCostDisplay').innerText = `¥ ${fmt(totalBuyerCost)}`;
-                getEl('extraFeeDetail').innerText = extraFee > 0 ? `额外支出 (Push/中介) + ¥ ${fmt(extraFee)}` : '无额外买家支出';
-                
-                if (extraFee > 0) {
-                    finalBox.style.backgroundColor = "rgba(0,191,165,0.08)";
-                    finalBox.style.borderColor = "rgba(0,191,165,0.3)";
-                    getEl('finalTotalCostDisplay').style.color = "#00BFA5";
-                    getEl('finalCostLabel').style.color = "#00BFA5";
-                    getEl('extraFeeDetail').style.color = "#00BFA5";
-                } else {
-                    finalBox.style.backgroundColor = "rgb(249,250,251)";
-                    finalBox.style.borderColor = "rgb(229,231,235)";
-                    getEl('finalTotalCostDisplay').style.color = "#1f2937";
-                    getEl('finalCostLabel').style.color = "#94a3b8";
-                    getEl('extraFeeDetail').style.color = "#64748b";
-                }
-                
+                getEl('dayActual').innerText = `¥${fmt(totalBuyerCost / days, 3)} / 天`;
+
                 getEl('valueRatioBox').classList.remove('hidden');
                 const totalPart = resCNY + Math.max(0, prem) || 1;
-                getEl('barValue').style.width = `${(resCNY/totalPart)*100}%`;
-                getEl('barPremium').style.width = `${(Math.max(0, prem)/totalPart)*100}%`;
+                getEl('barValue').style.width = `${(resCNY / totalPart) * 100}%`;
+                getEl('barPremium').style.width = `${(Math.max(0, prem) / totalPart) * 100}%`;
             } else {
                 getEl('premiumBox').classList.add('hidden');
                 getEl('resActual').innerText = '¥ --';
-                getEl('middlemanRow').classList.add('hidden');
                 getEl('dayActual').innerText = '--';
                 getEl('valueRatioBox').classList.add('hidden');
-                getEl('barValue').style.width = '100%'; getEl('barPremium').style.width = '0%';
-                
-                getEl('finalTotalCostDisplay').innerText = '¥ --';
-                getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
-                getEl('finalTotalCostDisplay').style.color = "#1f2937";
-                getEl('finalCostLabel').style.color = "#94a3b8";
-                getEl('extraFeeDetail').style.color = "#64748b";
-                if(getEl('finalCostBox')) {
-                    getEl('finalCostBox').style.backgroundColor = "rgb(249,250,251)";
-                    getEl('finalCostBox').style.borderColor = "rgb(229,231,235)";
-                }
+                getEl('barValue').style.width = '0%'; 
+                getEl('barPremium').style.width = '0%';
             }
-            getEl('dayOfficial').innerText = `¥${fmt(resCNY/days, 3)} / 天`;
+            getEl('dayOfficial').innerText = `¥${fmt(resCNY / days, 3)} / 天`;
         }
 
         function resetResults(days) {
@@ -471,26 +342,18 @@
             getEl('progressHint').innerText = days <= 0 ? '该机器已在交易日前到期' : '';
             getEl('premiumBox').classList.add('hidden');
             getEl('valueRatioBox').classList.add('hidden');
-            getEl('barValue').style.width = '0%'; getEl('barPremium').style.width = '0%';
-            getEl('dayOfficial').innerText = '--'; getEl('dayActual').innerText = '--';
-            getEl('resOrig').innerText = '--'; getEl('resActual').innerText = '¥ --';
-            
-            getEl('middlemanRow').classList.add('hidden');
-            getEl('finalTotalCostDisplay').innerText = '¥ --';
-            getEl('extraFeeDetail').innerText = '含额外支出 ¥ 0.00';
-            getEl('finalTotalCostDisplay').style.color = "#1f2937";
-            getEl('finalCostLabel').style.color = "#94a3b8";
-            getEl('extraFeeDetail').style.color = "#64748b";
-            if(getEl('finalCostBox')) {
-                getEl('finalCostBox').style.backgroundColor = "rgb(249,250,251)";
-                getEl('finalCostBox').style.borderColor = "rgb(229,231,235)";
-            }
+            getEl('barValue').style.width = '0%'; 
+            getEl('barPremium').style.width = '0%';
+            getEl('dayOfficial').innerText = '--'; 
+            getEl('dayActual').innerText = '--';
+            getEl('resOrig').innerText = '--'; 
+            getEl('resActual').innerText = '¥ --';
         }
 
         window.onload = () => {
             renderRateGrid(); 
             fetchLiveRates();
-            initDateNav(); // 启用日期导航
+            initDateNav();
             
             const today = new Date();
             getEl('tradeDate').value = getLocalISO(today, false);
@@ -498,47 +361,44 @@
             halfYearLater.setDate(today.getDate() + 182);
             getEl('expiryDate').value = getLocalISO(halfYearLater, false);
 
-            document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays));
+            getEl('premiumInput').value = '0';
+            getEl('actualPaid').value = '';
 
-            const dd = getEl('pushCurrDropdown');
-            Object.keys(rates).forEach(c => {
-                const opt = document.createElement('div'); opt.className='csel-option'; opt.innerText=c;
-                opt.onclick = () => { getEl('pushCurrLabel').innerText=c; dd.classList.remove('open'); calculate(); };
-                dd.appendChild(opt);
-            });
+            document.querySelectorAll('.cycle-btn').forEach(b => 
+                b.classList.toggle('active', parseInt(b.dataset.cycle) === cycleDays)
+            );
 
             getEl('rateRefreshTimer').onclick = () => {
                 fetchLiveRates(true);
                 showToast('已强制刷新汇率');
             };
 
+            bindCalcEvents();
+            calculate();
             getEl('renewalAmount').focus();
         };
 
-        getEl('pushCurrBtn').onclick = (e) => { e.stopPropagation(); getEl('pushCurrDropdown').classList.toggle('open'); };
-        document.onclick = () => getEl('pushCurrDropdown').classList.remove('open');
-        getEl('actualPaid').onfocus = () => { lastInput = 'actualPaid'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【实付卖家】推算溢价'; };
-        getEl('premiumInput').onfocus = () => { lastInput = 'premiumInput'; getEl('bindHint').innerHTML = '<i class="fas fa-lock mr-1"></i>当前锁定【卖家溢价】推算实付'; };
-        
-        // 全量自动计算绑定
-        ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput',
-         'useCustomRate','customRateInput','pushFee','pushPayer','useMiddleman','middlemanPayer','middlemanPercent'].forEach(id => {
-            const el = getEl(id);
-            el.onchange = calculate;
-            el.oninput = calculate;
-        });
+        function bindCalcEvents() {
+            const calcIds = [
+                'renewalAmount','currencySelector','tradeDate','expiryDate',
+                'useCustomRate','customRateInput','actualPaid'
+            ];
+            calcIds.forEach(id => {
+                const el = getEl(id);
+                el.onchange = calculate;
+                el.oninput = calculate;
+            });
 
-        // 周期选择
-        document.querySelectorAll('.cycle-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelector('.cycle-btn.active').classList.remove('active');
-                btn.classList.add('active');
-                cycleDays = parseInt(btn.dataset.cycle);
-                calculate();
-            };
-        });
+            document.querySelectorAll('.cycle-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelector('.cycle-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+                    cycleDays = parseInt(btn.dataset.cycle);
+                    calculate();
+                };
+            });
+        }
 
-        // 时间精度切换
         getEl('toggleTimePrecision').onclick = () => {
             isDateTime = !isDateTime;
             getEl('toggleTimePrecision').classList.toggle('text-[#00BFA5]', isDateTime);
@@ -547,47 +407,49 @@
             calculate();
         };
 
-        // 复制/分享/重置
         getEl('copyBtn').onclick = () => { 
-            let midText = '';
-            if (getEl('useMiddleman').checked) {
-                let actP = parseFloat(getEl('actualPaid').value) || 0;
-                let pct = parseFloat(getEl('middlemanPercent').value) || 0;
-                let midVal = actP * (pct / 100);
-                if (getEl('middlemanPayer').value === 'buyer') {
-                    midText = `\n买家付中介(${pct}%): ¥${fmt(midVal)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
-                } else if (getEl('middlemanPayer').value === 'split') {
-                    midText = `\nAA平摊中介(${pct}%): ¥${fmt(midVal / 2)}\n最终总支出: ${getEl('finalTotalCostDisplay').innerText}`;
-                } else {
-                    midText = `\n卖家扣中介(${pct}%): -¥${fmt(midVal)}\n买家总支出: ${getEl('finalTotalCostDisplay').innerText}`;
-                }
-            }
-            const text = `【VPS 剩余价值详情】\n剩余价值: ${getEl('resCNYBig').innerText}\n有效期: ${getEl('remainingDays').innerText}\n实付卖家: ${getEl('resActual').innerText}${midText}\n综合日均: ${getEl('dayActual').innerText}`;
-            navigator.clipboard.writeText(text); showToast('详情已复制');
+            const text = `【VPS 剩余价值详情】
+最终支出：${getEl('resCNYBig').innerText}
+剩余价值：¥ ${fmt(parseFloat(getEl('resCNYBig').innerText.replace('¥','')) - parseFloat(getEl('premiumValueBig').innerText.replace('¥','').replace('+','')))}
+有效期：${getEl('remainingDays').innerText}
+实付卖家：${getEl('resActual').innerText}
+${getEl('premiumTitle').innerText}：${getEl('premiumValueBig').innerText}
+综合日均：${getEl('dayActual').innerText}`;
+            navigator.clipboard.writeText(text); 
+            showToast('详情已复制');
         };
         
         getEl('shareBtn').onclick = () => { 
             const p = new URLSearchParams();
-            ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid','premiumInput','pushFee','pushPayer','middlemanPayer'].forEach(id => {
-                const v = getEl(id).value; if(v !== '') p.set(id, v);
+            ['renewalAmount','currencySelector','tradeDate','expiryDate','actualPaid'].forEach(id => {
+                const v = getEl(id).value; 
+                if(v !== '') p.set(id, v);
             });
             p.set('cycleDays', cycleDays);
-            p.set('lastInput', lastInput);
-            p.set('pushCurrency', getEl('pushCurrLabel').innerText);
             if(isDateTime) p.set('isDateTime', '1');
-            if(getEl('useCustomRate').checked) { p.set('useCustomRate', '1'); p.set('customRateInput', getEl('customRateInput').value); }
-            if(getEl('useMiddleman').checked) { p.set('useMiddleman', '1'); p.set('middlemanPercent', getEl('middlemanPercent').value); }
+            if(getEl('useCustomRate').checked) { 
+                p.set('useCustomRate', '1'); 
+                p.set('customRateInput', getEl('customRateInput').value); 
+            }
             const shareUrl = window.location.origin + window.location.pathname + '?' + p.toString();
             navigator.clipboard.writeText(shareUrl); 
-            showToast('状态专属链接已生成并复制'); 
+            showToast('链接已复制'); 
         };
         
-        getEl('resetBtn').onclick = () => { window.location.href = window.location.origin + window.location.pathname; };
+        getEl('resetBtn').onclick = () => { 
+            window.location.href = window.location.origin + window.location.pathname; 
+        };
 
         function showToast(m) { 
-            clearTimeout(toastTimer); const t = getEl('toast'); getEl('toastMsg').innerText = m; 
-            t.classList.remove('hidden'); t.classList.add('toast-show');
-            toastTimer = setTimeout(() => { t.classList.remove('toast-show'); t.classList.add('hidden'); }, 2000);
+            clearTimeout(toastTimer); 
+            const t = getEl('toast'); 
+            getEl('toastMsg').innerText = m; 
+            t.classList.remove('hidden'); 
+            t.classList.add('toast-show');
+            toastTimer = setTimeout(() => { 
+                t.classList.remove('toast-show'); 
+                t.classList.add('hidden'); 
+            }, 2000);
         }
     </script>
 </body>
