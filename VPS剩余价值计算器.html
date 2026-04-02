@@ -49,7 +49,7 @@
 <body class="p-4 md:p-8">
 
 <div id="toast" class="fixed top-6 left-1/2 translate-x-[-50%] z-50 pointer-events-none hidden bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-2xl items-center gap-2">
-    <i class="fas fa-check-circle text-emerald-400"></i><span id="toastMsg"></span>
+    <i class="fas fa-check-circle text-emerald400"></i><span id="toastMsg"></span>
 </div>
 
 <div class="max-w-5xl mx-auto">
@@ -191,6 +191,7 @@ let rates = {};
 let selectedCurrency = "USD";
 const CACHE_12H = 12 * 60 * 60 * 1000;
 let countTimer = null;
+let isOfflineMode = false;
 
 const fmt = (n, d=2) => n.toFixed(d);
 const getEl = id => document.getElementById(id);
@@ -220,6 +221,10 @@ function setRateCache(data) {
 }
 
 function updateRateInfoText() {
+    if (isOfflineMode) {
+        getEl('rateUpdateInfo').innerText = "当前为离线模式";
+        return;
+    }
     const cache = getRateCache();
     if (!cache) {
         getEl('rateUpdateInfo').innerText = "加载中...";
@@ -248,12 +253,17 @@ function updateRateInfoText() {
 }
 
 function startCountDown() {
+    if (isOfflineMode) return;
     clearInterval(countTimer);
     updateRateInfoText();
     countTimer = setInterval(updateRateInfoText, 1000);
 }
 
 async function refreshNow() {
+    if (isOfflineMode) {
+        showToast("离线模式无法刷新汇率");
+        return;
+    }
     localStorage.removeItem('rateCache');
     getEl('rateUpdateInfo').innerText = "刷新中...";
     await fetchRealRates();
@@ -264,6 +274,7 @@ async function fetchRealRates() {
     const cache = getRateCache();
     if (cache && Date.now() - cache.updateTime < CACHE_12H) {
         rates = cache.rates;
+        isOfflineMode = false;
         startCountDown();
         renderRateGrid();
         calculate();
@@ -286,11 +297,13 @@ async function fetchRealRates() {
             TWD: 1 / r.TWD,
             CNY: 1
         };
+        isOfflineMode = false;
         setRateCache(rates);
         startCountDown();
     } catch (e) {
         rates = { USD:6.88, EUR:7.38, GBP:8.12, HKD:0.88, SGD:5.18, AUD:4.55, CAD:5.02, CHF:7.61, TWD:0.22, CNY:1 };
-        getEl('rateUpdateInfo').innerText = "离线模式";
+        isOfflineMode = true;
+        updateRateInfoText();
     }
     renderRateGrid();
     calculate();
@@ -389,7 +402,9 @@ function calculate(sourceInput = null) {
         prem = actual - cny;
     }
 
-    getEl('resCNYBig').innerText = `¥ ${fmt(cny)}`;
+    const finalTotal = cny + prem;
+    getEl('resCNYBig').innerText = `¥ ${fmt(finalTotal)}`;
+    
     getEl('resOrig').innerText = curr === 'CNY' ? `${fmt(amt)} CNY` : `${fmt(amt)} ${curr}(≈${fmt(amt*rt)}元)`;
     getEl('remainingDays').innerText = `${fmt(rem,1)} 天`;
     getEl('remainingProgress').style.width = Math.min(100, (rem/totalDays)*100) + '%';
