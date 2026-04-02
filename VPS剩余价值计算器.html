@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400,500,700,900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght=400,500,700,900&display=swap');
         body { background: #e2e8f0; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cycle-btn { transition: all .15s; border: 1.5px solid #e2e8f0; background: white; color: #94a3b8; font-weight: 700; font-size: 12px; border-radius: 10px; padding: 8px 0; cursor: pointer; width: 100%; }
@@ -51,12 +51,12 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div id="toast" class="fixed top-6 left-1/2 translate-x-[-50%] z-50 pointer-events-none hidden bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-2xl items-center gap-2">
-        <i id="toastIcon" class="fas fa-check-circle text-emerald-400"></i><span id="toastMsg"></span>
+    <div id="toast" class="fixed top-6 left-1/2 translate-x-[-50%] z-5 pointer-events-none hidden bg-gray-900 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-2xl items-center gap-2">
+        <i class="fas fa-check-circle text-emerald-400"></i><span id="toastMsg"></span>
     </div>
 
     <div class="max-w-5xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="grid-cols-12 grid gap-5">
             <div class="lg:col-span-7 space-y-4">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <p class="field-label">① 续费信息</p>
@@ -118,8 +118,8 @@
                     <div class="grid grid-cols-6 gap-2" id="cycleSelector">
                         <button class="cycle-btn" data-cycle="1M">月付</button>
                         <button class="cycle-btn" data-cycle="3M">季付</button>
-                        <button class="cycle-btn active" data-cycle="6M">半年</button>
-                        <button class="cycle-btn" data-cycle="1Y">年付</button>
+                        <button class="cycle-btn" data-cycle="6M">半年</button>
+                        <button class="cycle-btn active" data-cycle="1Y">年付</button>
                         <button class="cycle-btn" data-cycle="2Y">两年</button>
                     </div>
                 </div>
@@ -164,14 +164,14 @@
                     </div>
                     
                     <div style="margin-top:24px">
-                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;font-size:10px;font-weight:800;text-transform:uppercase;margin-bottom:6px;">
                             <span style="color:#475569">剩余有效期</span>
-                            <span id="remainingDays" style="color:#00BFA5; font-size:14px; font-weight:900;">-- 天</span>
+                            <span id="remainingDays" style="color:#00BFA5;font-size:14px;font-weight:900;">-- 天</span>
                         </div>
-                        <div style="background:rgba(0,0,0,.07); border-radius:99px; height:6px; overflow:hidden">
+                        <div style="background:rgba(0,0,0,.07);border-radius:99px;height:6px;overflow:hidden">
                             <div id="remainingProgress" class="progress-bar" style="width:0%"></div>
                         </div>
-                        <div id="progressHint" style="text-align:right; font-size:10px; color:#475569; font-weight:700; margin-top:4px;"></div>
+                        <div id="progressHint" style="text-align:right;font-size:10px;color:#475569;font-weight:700;margin-top:4px;"></div>
                     </div>
 
                     <div id="valueRatioBox" class="mt-5 pt-5 border-t border-gray-100 hidden">
@@ -180,7 +180,6 @@
                             <div id="barValue" class="h-full bg-[#00BFA5] transition-all duration-500" style="width:0%"></div>
                             <div id="barPremium" class="h-full bg-orange-400 transition-all duration-500" style="width:0%"></div>
                         </div>
-                        <!-- 新增：数值显示 -->
                         <div class="flex gap-4 mt-2 text-[9px] font-bold" id="ratioTextWrapper">
                             <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00BFA5]"></span>剩余价值 <span id="valuePercent" class="text-[#00BFA5]">0%</span></div>
                             <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>溢价部分 <span id="premiumPercent" class="text-orange-400">0%</span></div>
@@ -188,9 +187,9 @@
                     </div>
 
                     <div class="flex gap-2 mt-6">
-                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm shadow-lg hover:scale-[1.02] transition-all text-white"><i class="fas fa-copy mr-2"></i>复制详情喵</button>
-                        <button id="shareBtn" class="px-5 bg-gray-700 rounded-xl font-black text-sm hover:scale-[1.02] transition-all text-white"><i class="fas fa-link"></i></button>
-                        <button id="resetBtn" class="px-5 bg-red-500/10 text-red-500 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-rotate-right"></i></button>
+                        <button id="copyBtn" class="flex-1 py-4 bg-[#00BFA5] rounded-xl font-black text-sm shadow-lg hover:scale-[1.02] transition-all text-white"><i class="fas fa-copy mr-2"></i>复制详情</button>
+                        <button id="copyMdBtn" class="flex-1 py-4 bg-gray-700 rounded-xl font-black text-sm shadow-lg hover:scale-[1.02] transition-all text-white"><i class="fab fa-markdown mr-2"></i>复制</button>
+                        <button id="resetBtn" class="flex-1 py-4 bg-red-500/10 text-red-500 rounded-xl font-black text-sm hover:scale-[1.02] transition-all"><i class="fas fa-rotate-right mr-2"></i>重置</button>
                     </div>
                 </div>
             </div>
@@ -198,14 +197,21 @@
     </div>
 
     <script>
-        let cycleType = "6M", isDateTime = false, toastTimer = null;
-        let rates = { USD:7.23, EUR:7.82, GBP:9.12, HKD:0.92, SGD:5.38, AUD:4.75, CAD:5.32, CHF:8.1, TWD:0.23, CNY:1 };
+        let cycleType = "1Y", isDateTime = false, toastTimer = null;
+        let rates = { USD:6.88, EUR:7.38, GBP:8.12, HKD:0.88, SGD:5.18, AUD:4.55, CAD:5.02, CHF:7.61, TWD:0.22, CNY:1 };
         let selectedCurrency = "USD";
         let rateRefreshInterval = null;
         const CACHE_DURATION = 12 * 60 * 60 * 1000;
 
         const fmt = (n, d=2) => n.toFixed(d);
         const getEl = id => document.getElementById(id);
+        
+        function addDays(date, days) {
+            let d = new Date(date);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        }
+
         const getLocalISO = (d, isDT) => {
             const date = new Date(d);
             const offset = date.getTimezoneOffset() * 60000;
@@ -256,61 +262,11 @@
                     selectedCurrency = card.dataset.code;
                     document.querySelectorAll('.rate-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    const name = currencyList.find(i=>i.code===selectedCurrency)?.name || '';
-                    getEl('selectedCurrencyText').innerText = `${selectedCurrency} · ${name}`;
+                    getEl('selectedCurrencyText').innerText = `${selectedCurrency} · ${currencyList.find(i=>i.code===selectedCurrency)?.name}`;
                     getEl('customRateLabel').innerText = selectedCurrency;
                     calculate();
                 }
             });
-        }
-
-        function startRateTimer() {
-            clearInterval(rateRefreshInterval);
-            const update = () => {
-                const cache = JSON.parse(localStorage.getItem('rateCache'));
-                if(!cache){
-                    getEl('lastUpdateText').innerText = "首次加载";
-                    getEl('rateRefreshTimer').innerText = "点击刷新";
-                    return;
-                }
-                getEl('lastUpdateText').innerText = `上次: ${formatDateTime(cache.timestamp)}`;
-                const now = Date.now();
-                const left = Math.max(0, cache.timestamp + CACHE_DURATION - now);
-                const h = Math.floor(left/3600000);
-                const m = Math.floor((left%3600000)/60000);
-                getEl('rateRefreshTimer').innerText = `${h}时${m}分后刷新`;
-                if(left <= 0) fetchLiveRates(true);
-            };
-            update();
-            rateRefreshInterval = setInterval(update, 1000);
-        }
-
-        async function fetchLiveRates(force = false) {
-            try {
-                const cache = JSON.parse(localStorage.getItem('rateCache'));
-                if(!force && cache && (Date.now() - cache.timestamp) < CACHE_DURATION){
-                    rates = cache.data;
-                    renderRateGrid(); calculate(); startRateTimer();
-                    return;
-                }
-
-                const res = await fetch('https://v6.exchangerate-api.com/v6/416fc7318db286baaf635434/latest/USD');
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                const usdToCny = data.conversion_rates.CNY;
-                
-                Object.assign(rates, {
-                    USD: usdToCny, EUR: usdToCny / data.conversion_rates.EUR, GBP: usdToCny / data.conversion_rates.GBP,
-                    HKD: usdToCny / data.conversion_rates.HKD, SGD: usdToCny / data.conversion_rates.SGD, AUD: usdToCny / data.conversion_rates.AUD,
-                    CAD: usdToCny / data.conversion_rates.CAD, CHF: usdToCny / data.conversion_rates.CHF, TWD: usdToCny / data.conversion_rates.TWD
-                });
-                
-                localStorage.setItem('rateCache', JSON.stringify({
-                    timestamp: Date.now(),
-                    data: rates
-                }));
-            } catch(e) {}
-            renderRateGrid(); calculate(); startRateTimer();
         }
 
         function getRealCycleDays(startDate, cycle){
@@ -351,31 +307,27 @@
             const resOrig = amount * (remainingDays / totalDays);
             const resCNY = resOrig * rate;
 
-            let prem = 0, actPaid = 0;
-            const premiumVal = getEl('premiumInput').value.trim();
-            const actualVal = getEl('actualPaid').value.trim();
+            let prem = parseFloat(getEl('premiumInput').value) || 0;
+            let actPaid = 0;
 
-            if (sourceInput === 'actualPaid' && actualVal !== '') {
-                actPaid = parseFloat(actualVal);
+            if (sourceInput === 'actualPaid') {
+                actPaid = parseFloat(getEl('actualPaid').value) || resCNY;
                 prem = actPaid - resCNY;
                 getEl('premiumInput').value = fmt(prem, 2);
-            } else if (sourceInput === 'premiumInput' && premiumVal !== '') {
-                prem = parseFloat(premiumVal);
+            } else if (sourceInput === 'premiumInput') {
                 actPaid = resCNY + prem;
                 getEl('actualPaid').value = fmt(actPaid, 2);
             } else {
-                prem = parseFloat(premiumVal) || 0;
-                actPaid = parseFloat(actualVal) || 0;
+                actPaid = parseFloat(getEl('actualPaid').value) || resCNY;
+                prem = actPaid - resCNY;
             }
 
-            const totalCost = resCNY + prem;
-            getEl('resCNYBig').innerText = `¥ ${fmt(totalCost)}`;
+            getEl('resCNYBig').innerText = `¥ ${fmt(resCNY)}`;
             
-            // 修改：续费金额显示，非人民币显示外币+人民币
             if(curr === 'CNY'){
                 getEl('resOrig').innerText = `${fmt(amount)} ${curr}`;
             }else{
-                getEl('resOrig').innerText = `${fmt(amount)} ${curr}(${fmt(amount * rate)}元)`;
+                getEl('resOrig').innerText = `${fmt(amount)} ${curr}(≈${fmt(amount * rate)}元)`;
             }
             
             getEl('remainingDays').innerText = `${fmt(remainingDays,1)} 天`;
@@ -383,15 +335,15 @@
             getEl('progressHint').innerText = `总周期 ${Math.round(totalDays)} 天`;
             getEl('resActual').innerText = `¥ ${fmt(actPaid)}`;
             getEl('dayOfficial').innerText = `¥${fmt(resCNY/remainingDays,2)}`;
-            getEl('dayActual').innerText = `¥${fmt(totalCost/remainingDays,2)}`;
+            getEl('dayActual').innerText = `¥${fmt((resCNY+prem)/remainingDays,2)}`;
 
-            if(prem === 0){
+            if(Math.abs(prem) < 0.01){
                 getEl('premiumBox').classList.add('hidden');
                 getEl('valueRatioBox').classList.add('hidden');
             }else{
                 getEl('premiumBox').classList.remove('hidden');
-                getEl('premiumTitle').innerText = prem >=0 ? '卖家溢价' : '卖家折价';
-                getEl('premiumValueBig').innerText = `${prem>=0 ? '+' : ''}¥ ${fmt(prem)}`;
+                getEl('premiumTitle').innerText = prem >=0 ? "卖家溢价" : "卖家折价";
+                getEl('premiumValueBig').innerText = `${prem>=0 ? "+" : ""}¥ ${fmt(prem)}`;
                 getEl('premiumValueBig').className = prem >=0 ? "text-2xl font-black text-red-500" : "text-2xl font-black text-green-500";
                 getEl('valueRatioBox').classList.remove('hidden');
                 const totalPart = resCNY + Math.max(0, prem) || 1;
@@ -399,7 +351,6 @@
                 const premiumRatio = (Math.max(0,prem)/totalPart)*100;
                 getEl('barValue').style.width = `${valueRatio}%`;
                 getEl('barPremium').style.width = `${premiumRatio}%`;
-                // 显示具体百分比
                 getEl('valuePercent').innerText = `${fmt(valueRatio, 1)}%`;
                 getEl('premiumPercent').innerText = `${fmt(premiumRatio, 1)}%`;
             }
@@ -419,24 +370,14 @@
         }
 
         window.onload = () => {
-            renderRateGrid(); fetchLiveRates(); initDateNav();
+            renderRateGrid();
+            initDateNav();
             const today = new Date();
             getEl('tradeDate').value = getLocalISO(today, false);
-            // 默认到期日期+6个月
-            const next6Month = new Date(today);
-            next6Month.setMonth(next6Month.getMonth() + 6);
-            getEl('expiryDate').value = getLocalISO(next6Month, false);
+            getEl('expiryDate').value = addDays(today, 150); // 默认 +150天
 
             getEl('premiumInput').value = '';
             getEl('actualPaid').value = '';
-
-            // 续费金额按回车 → 跳转到到期日期
-            getEl('renewalAmount').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    getEl('expiryDate').focus();
-                }
-            });
 
             document.querySelectorAll('.cycle-btn').forEach(btn => {
                 btn.onclick = () => {
@@ -447,8 +388,8 @@
                 };
             });
 
-            getEl('rateRefreshTimer').onclick = () => { fetchLiveRates(true); showToast('汇率已刷新'); };
-            bindCalcEvents(); calculate();
+            bindCalcEvents();
+            calculate();
             getEl('renewalAmount').focus();
         };
 
@@ -460,38 +401,68 @@
             });
         }
 
-        getEl('toggleTimePrecision').onclick = () => {
-            isDateTime = !isDateTime;
-            getEl('toggleTimePrecision').classList.toggle('text-[#00BFA5]', isDateTime);
-            getEl('tradeDate').type = isDateTime ? 'datetime-local' : 'date';
-            getEl('expiryDate').type = isDateTime ? 'datetime-local' : 'date';
-            calculate();
+        // 复制普通文本
+        getEl('copyBtn').onclick = () => { 
+            const cycleMap = { "1M":"月付", "3M":"季付", "6M":"半年", "1Y":"年付", "2Y":"两年" };
+            const amountText = getEl('resOrig').innerText;
+            const cycleText = cycleMap[cycleType] || "";
+            const expiryDate = getEl('expiryDate').value;
+            const remainValue = getEl('resCNYBig').innerText;
+            const premiumVal = parseFloat(getEl('premiumInput').value) || 0;
+            
+            const realPay = Math.abs(premiumVal) < 0.01 ? remainValue : getEl('resActual').innerText;
+
+            let text = `【VPS剩余价值计算】\n`;
+            text += `续费金额：${amountText}\n`;
+            text += `付款周期：${cycleText}\n`;
+            text += `到期日期：${expiryDate}\n`;
+            text += `剩余价值：${remainValue}\n`;
+            
+            if (Math.abs(premiumVal) > 0.01) {
+                const type = premiumVal >= 0 ? "溢价" : "折价";
+                text += `${type}金额：¥${fmt(premiumVal,2)}\n`;
+            }
+            
+            text += `实付金额：${realPay}`;
+            navigator.clipboard.writeText(text);
+            showToast('已复制详情');
         };
 
-        getEl('copyBtn').onclick = () => { 
-            const text = `【VPS 剩余价值详情】\n剩余价值: ${getEl('resCNYBig').innerText}\n有效期: ${getEl('remainingDays').innerText}\n实付卖家: ${getEl('resActual').innerText}\n综合日均: ${getEl('dayActual').innerText}`;
-            navigator.clipboard.writeText(text); showToast('已复制');
+        // 复制 Markdown 格式
+        getEl('copyMdBtn').onclick = () => {
+            const cycleMap = { "1M":"月付", "3M":"季付", "6M":"半年", "1Y":"年付", "2Y":"两年" };
+            const amountText = getEl('resOrig').innerText;
+            const cycleText = cycleMap[cycleType] || "";
+            const expiryDate = getEl('expiryDate').value;
+            const remainValue = getEl('resCNYBig').innerText;
+            const premiumVal = parseFloat(getEl('premiumInput').value) || 0;
+            const realPay = Math.abs(premiumVal) < 0.01 ? remainValue : getEl('resActual').innerText;
+
+            let md = `### VPS剩余价值计算\n\n`;
+            md += `- 续费金额：${amountText}\n`;
+            md += `- 付款周期：${cycleText}\n`;
+            md += `- 到期日期：${expiryDate}\n`;
+            md += `- 剩余价值：${remainValue}\n`;
+            
+            if (Math.abs(premiumVal) > 0.01) {
+                const type = premiumVal >= 0 ? "溢价" : "折价";
+                md += `- ${type}金额：¥${fmt(premiumVal,2)}\n`;
+            }
+            
+            md += `- 实付金额：${realPay}`;
+            navigator.clipboard.writeText(md);
+            showToast('已复制Markdown');
         };
-        
-        getEl('shareBtn').onclick = () => { 
-            const p = new URLSearchParams();
-            ['renewalAmount','tradeDate','expiryDate','premiumInput','actualPaid'].forEach(id => {
-                const v = getEl(id).value; if(v) p.set(id, v);
-            });
-            p.set('cycle', cycleType); p.set('curr', selectedCurrency);
-            if(isDateTime) p.set('dt',1);
-            if(getEl('useCustomRate').checked){ p.set('custom',1); p.set('rate', getEl('customRateInput').value); }
-            navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?' + p.toString());
-            showToast('链接已复制');
-        };
-        
+
         getEl('resetBtn').onclick = () => { window.location.reload(); };
 
         function showToast(m) { 
-            clearTimeout(toastTimer); const t = getEl('toast');
+            clearTimeout(toastTimer);
+            const t = getEl('toast');
             t.querySelector('span').innerText = m;
-            t.classList.remove('hidden'); t.classList.add('toast-show');
-            toastTimer = setTimeout(() => t.classList.add('hidden'), 2000);
+            t.classList.remove('hidden');
+            t.classList.add('toast-show');
+            setTimeout(() => t.classList.add('hidden'), 2000);
         }
     </script>
 </body>
