@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400,500,700,900&display=swap');
-        body { background: #eef2f7; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
+        body { background: #e2e8f0; font-family: 'DM Sans', 'PingFang SC', sans-serif; min-height: 100vh; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .cycle-btn { transition: all .15s; border: 1.5px solid #e2e8f0; background: white; color: #94a3b8; font-weight: 700; font-size: 12px; border-radius: 10px; padding: 8px 0; cursor: pointer; width: 100%; }
         .cycle-btn.active { background: #00BFA5; border-color: #00BFA5; color: white; box-shadow: 0 4px 14px rgba(0,191,165,.35); }
@@ -118,8 +118,8 @@
                     <div class="grid grid-cols-6 gap-2" id="cycleSelector">
                         <button class="cycle-btn" data-cycle="1M">月付</button>
                         <button class="cycle-btn" data-cycle="3M">季付</button>
-                        <button class="cycle-btn" data-cycle="6M">半年</button>
-                        <button class="cycle-btn active" data-cycle="1Y">年付</button>
+                        <button class="cycle-btn active" data-cycle="6M">半年</button>
+                        <button class="cycle-btn" data-cycle="1Y">年付</button>
                         <button class="cycle-btn" data-cycle="2Y">两年</button>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                     </div>
 
                     <div class="space-y-2 border-t border-gray-100 pt-4">
-                        <div class="result-row"><span class="result-label">折合原币</span><span id="resOrig" class="result-value">--</span></div>
+                        <div class="result-row"><span class="result-label">续费金额</span><span id="resOrig" class="result-value">--</span></div>
                         <div class="result-row"><span class="result-label">实付卖家</span><span id="resActual" class="result-value">¥ --</span></div>
                         <div class="result-row"><span class="result-label">官方日均</span><span id="dayOfficial" class="result-value">--</span></div>
                         <div class="result-row border-none"><span class="result-label text-[#00BFA5]">综合日均</span><span id="dayActual" class="result-value text-[#00BFA5]">--</span></div>
@@ -180,9 +180,10 @@
                             <div id="barValue" class="h-full bg-[#00BFA5] transition-all duration-500" style="width:0%"></div>
                             <div id="barPremium" class="h-full bg-orange-400 transition-all duration-500" style="width:0%"></div>
                         </div>
-                        <div class="flex gap-4 mt-2 text-[9px] font-bold text-gray-400">
-                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00BFA5]"></span>剩余价值</div>
-                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>溢价部分</div>
+                        <!-- 新增：数值显示 -->
+                        <div class="flex gap-4 mt-2 text-[9px] font-bold" id="ratioTextWrapper">
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#00BFA5]"></span>剩余价值 <span id="valuePercent" class="text-[#00BFA5]">0%</span></div>
+                            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>溢价部分 <span id="premiumPercent" class="text-orange-400">0%</span></div>
                         </div>
                     </div>
 
@@ -197,11 +198,11 @@
     </div>
 
     <script>
-        let cycleType = "1Y", isDateTime = false, toastTimer = null;
+        let cycleType = "6M", isDateTime = false, toastTimer = null;
         let rates = { USD:7.23, EUR:7.82, GBP:9.12, HKD:0.92, SGD:5.38, AUD:4.75, CAD:5.32, CHF:8.1, TWD:0.23, CNY:1 };
         let selectedCurrency = "USD";
         let rateRefreshInterval = null;
-        const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12小时缓存
+        const CACHE_DURATION = 12 * 60 * 60 * 1000;
 
         const fmt = (n, d=2) => n.toFixed(d);
         const getEl = id => document.getElementById(id);
@@ -212,7 +213,6 @@
             return local.toISOString().slice(0, isDT ? 16 : 10);
         };
 
-        // 格式化时间显示
         function formatDateTime(timestamp) {
             const d = new Date(timestamp);
             return d.toLocaleString('zh-CN');
@@ -264,7 +264,6 @@
             });
         }
 
-        // 汇率缓存与倒计时
         function startRateTimer() {
             clearInterval(rateRefreshInterval);
             const update = () => {
@@ -314,7 +313,6 @@
             renderRateGrid(); calculate(); startRateTimer();
         }
 
-        // 真实自然月/年计算总天数
         function getRealCycleDays(startDate, cycle){
             const start = new Date(startDate);
             const end = new Date(start);
@@ -372,7 +370,14 @@
 
             const totalCost = resCNY + prem;
             getEl('resCNYBig').innerText = `¥ ${fmt(totalCost)}`;
-            getEl('resOrig').innerText = `${fmt(resOrig)} ${curr}`;
+            
+            // 修改：续费金额显示，非人民币显示外币+人民币
+            if(curr === 'CNY'){
+                getEl('resOrig').innerText = `${fmt(amount)} ${curr}`;
+            }else{
+                getEl('resOrig').innerText = `${fmt(amount)} ${curr}(${fmt(amount * rate)}元)`;
+            }
+            
             getEl('remainingDays').innerText = `${fmt(remainingDays,1)} 天`;
             getEl('remainingProgress').style.width = `${Math.min(100, (remainingDays/totalDays)*100)}%`;
             getEl('progressHint').innerText = `总周期 ${Math.round(totalDays)} 天`;
@@ -380,7 +385,6 @@
             getEl('dayOfficial').innerText = `¥${fmt(resCNY/remainingDays,2)}`;
             getEl('dayActual').innerText = `¥${fmt(totalCost/remainingDays,2)}`;
 
-            // 溢价为0完全隐藏
             if(prem === 0){
                 getEl('premiumBox').classList.add('hidden');
                 getEl('valueRatioBox').classList.add('hidden');
@@ -391,8 +395,13 @@
                 getEl('premiumValueBig').className = prem >=0 ? "text-2xl font-black text-red-500" : "text-2xl font-black text-green-500";
                 getEl('valueRatioBox').classList.remove('hidden');
                 const totalPart = resCNY + Math.max(0, prem) || 1;
-                getEl('barValue').style.width = `${(resCNY/totalPart)*100}%`;
-                getEl('barPremium').style.width = `${(Math.max(0,prem)/totalPart)*100}%`;
+                const valueRatio = (resCNY/totalPart)*100;
+                const premiumRatio = (Math.max(0,prem)/totalPart)*100;
+                getEl('barValue').style.width = `${valueRatio}%`;
+                getEl('barPremium').style.width = `${premiumRatio}%`;
+                // 显示具体百分比
+                getEl('valuePercent').innerText = `${fmt(valueRatio, 1)}%`;
+                getEl('premiumPercent').innerText = `${fmt(premiumRatio, 1)}%`;
             }
         }
 
@@ -413,14 +422,22 @@
             renderRateGrid(); fetchLiveRates(); initDateNav();
             const today = new Date();
             getEl('tradeDate').value = getLocalISO(today, false);
-            const nextYear = new Date(today);
-            nextYear.setFullYear(nextYear.getFullYear()+1);
-            getEl('expiryDate').value = getLocalISO(nextYear, false);
+            // 默认到期日期+6个月
+            const next6Month = new Date(today);
+            next6Month.setMonth(next6Month.getMonth() + 6);
+            getEl('expiryDate').value = getLocalISO(next6Month, false);
 
             getEl('premiumInput').value = '';
             getEl('actualPaid').value = '';
 
-            // 周期切换
+            // 续费金额按回车 → 跳转到到期日期
+            getEl('renewalAmount').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    getEl('expiryDate').focus();
+                }
+            });
+
             document.querySelectorAll('.cycle-btn').forEach(btn => {
                 btn.onclick = () => {
                     document.querySelectorAll('.cycle-btn').forEach(b => b.classList.remove('active'));
