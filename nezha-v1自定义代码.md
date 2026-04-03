@@ -1,3 +1,4 @@
+```
 <script src="https://testingcf.jsdelivr.net/gh/zcoal/vpstest@main/vps-show-ping.js"></script>
 <script>
 (function () {
