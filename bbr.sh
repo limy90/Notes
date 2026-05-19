@@ -3,9 +3,8 @@
 # 专线网络优化工具 beta1.0
 # 链路拓扑: 用户 → 前置 → IX专线 → 国际转发 → 落地 → 家宽
 # 功能: BBR/sysctl优化 + TC双向限速 + 链路向导，针对场景和机器定制化出配方，附带限速和白名单IP功能（ipv6机器请勿使用这俩功能 会丢ipv6）
-# 用法:
+#  下载上传到vps /root 修改权限可以是777  建议先手动把 /etc/sysctl.d 目录和 /etc/sysctl.conf 文件清空  https://www.nodeseek.com/post-674603-1
 #   交互式: sudo bash network-optimizer.sh
-#   直接操作: sudo bash network-optimizer.sh <命令>
 # ============================================================
 
 IFB_DEV="ifb0"
