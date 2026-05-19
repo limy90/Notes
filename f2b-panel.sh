@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ==============================================================================
-# Fail2ban
-#添加执行权限 chmod +x f2b-panel.sh
+# Fail2ban 一键管理面板 - 优化增强版
+# 添加执行权限 chmod +x f2b-panel.sh
 # ==============================================================================
 
 # --- 全局变量 ---
@@ -59,7 +59,7 @@ bantime = 600
 findtime = 3600
 maxretry = 5
 banaction = iptables-multiport
-backend = auto
+backend = systemd
 
 [sshd]
 enabled = true
@@ -91,24 +91,22 @@ EOF
 # --- 核心配置函数（修复版） ---
 get_conf() {
     local key=$1
-    # 精准获取 sshd 模块下的配置
-    awk -v section="[${TARGET_JAIL}]" -v key="$key" '
-        $0 == section {in_section=1; next}
-        in_section && /^\[/ {exit}
-        in_section && $1 == key {print $3; exit}
-    ' "$JAIL_CONF" | tr -d ' '
+    awk -v section="[${TARGET_JAIL}]" -v k="$key" '
+        $0 == section { in_section=1; next }
+        in_section && /^\[/ { exit }
+        in_section && $1 == k { print $3; exit }
+    ' "$JAIL_CONF" | tr -d ' ' || true
 }
 
 set_conf() {
     local key=$1
     local val=$2
-    # 安全写入配置，修复原脚本sed错误
-    awk -v section="[${TARGET_JAIL}]" -v key="$key" -v val="$val" '
-        $0 == section {in_section=1; print; next}
-        in_section && /^\[/ {print key " = " val; print; in_section=0; next}
-        in_section && $1 == key {next}
+    awk -v section="[${TARGET_JAIL}]" -v k="$key" -v v="$val" '
+        $0 == section { in_section=1; print; next }
+        in_section && /^\[/ { print k " = " v; print; in_section=0; next }
+        in_section && $1 == k { next }
         1
-    ' "$JAIL_CONF" > "${JAIL_CONF}.tmp" && mv "${JAIL_CONF}.tmp" "$JAIL_CONF"
+    ' "$JAIL_CONF" > "${JAIL_CONF}.tmp" && mv -f "${JAIL_CONF}.tmp" "$JAIL_CONF"
 }
 
 # 稳定重启函数
@@ -117,7 +115,6 @@ restart_f2b() {
     systemctl daemon-reload
     systemctl restart fail2ban
     
-    # 循环检测服务状态
     for i in {1..5}; do
         if fail2ban-client ping >/dev/null 2>&1; then
             echo -e "${GREEN}成功！配置已生效。${PLAIN}"
@@ -146,9 +143,10 @@ get_status() {
 fmt_unit() {
     local val=$1; local type=$2
     if [[ "$val" =~ ^[0-9]+$ ]]; then
-        if [ "$type" == "time" ]; then echo "${val}秒"; 
-        elif [ "$type" == "factor" ]; then echo "${val}倍"; 
-        else echo "$val"; fi
+        if [ "$type" == "time" ]; then echo "${val}秒"
+        elif [ "$type" == "factor" ]; then echo "${val}倍"
+        else echo "$val"
+        fi
     else
         echo "$val"
     fi
