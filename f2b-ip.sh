@@ -1,0 +1,468 @@
+#!/bin/bash
+
+# ====================== 全局通用配置 ======================
+# 颜色定义
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[36m"
+PURPLE='\033[0;35m'
+GRAY="\033[90m"
+NC='\033[0m'
+PLAIN="\033[0m"
+
+# ====================== 主菜单 ======================
+main_menu() {
+    clear
+    echo -e "${BLUE}====================================================${NC}"
+    echo -e "${PURPLE}              综合管理脚本${NC}"
+    echo -e "${BLUE}====================================================${NC}"
+    echo -e "${YELLOW}1) Fail2ban 管理 (SSH封禁)${NC}"
+    echo -e "${YELLOW}2) IP优先级管理 (IPv4/IPv6切换)${NC}"
+    echo -e "${YELLOW}0) 退出脚本${NC}"
+    echo -e "${BLUE}====================================================${NC}"
+    echo -n "请选择功能 [0-2]："
+    read MAIN_CHOICE
+
+    case $MAIN_CHOICE in
+        1) run_fail2ban ;;
+        2) run_ip_manager ;;
+        0) echo -e "${GREEN}✅ 退出脚本${NC}"; exit 0 ;;
+        *) echo -e "${RED}❌ 无效选项，请重新选择${NC}"; sleep 2; main_menu ;;
+    esac
+}
+
+# ====================== 1. Fail2ban 管理模块 ======================
+run_fail2ban() {
+    # --- Fail2ban 全局变量 ---
+    JAIL_CONF="/etc/fail2ban/jail.local"
+    TARGET_JAIL="sshd"
+
+    # 自动适配系统日志路径
+    if [ -f /var/log/auth.log ]; then
+        LOG_PATH="/var/log/auth.log"
+    elif [ -f /var/log/secure ]; then
+        LOG_PATH="/var/log/secure"
+    else
+        LOG_PATH="/var/log/auth.log"
+    fi
+    LOG_FILE="/var/log/fail2ban.log"
+
+    # --- 预检步骤 ---
+    check_install() {
+        if ! command -v fail2ban-client >/dev/null 2>&1; then
+            echo -e "${YELLOW}未检测到 Fail2ban 服务。${PLAIN}"
+            read -p "是否立即安装 Fail2ban 和 Rsyslog？(y/n): " install_confirm
+            if [[ "$install_confirm" == "y" ]]; then
+                echo -e "${BLUE}正在安装 Fail2ban 和 Rsyslog...${PLAIN}"
+                
+                if command -v apt-get >/dev/null 2>&1; then
+                    apt-get update && apt-get install -y fail2ban rsyslog
+                elif command -v yum >/dev/null 2>&1 || command -v dnf >/dev/null 2>&1; then
+                    yum install -y fail2ban rsyslog
+                else
+                    echo -e "${RED}未识别的包管理器，请手动安装 Fail2ban。${PLAIN}"
+                    exit 1
+                fi
+
+                # 创建日志文件
+                [ ! -f "$LOG_PATH" ] && touch "$LOG_PATH"
+                systemctl enable --now rsyslog
+                
+                # 初始化配置：第一次1天，第二次3天，第三次永久
+                if [ ! -f "$JAIL_CONF" ]; then
+                    echo -e "${BLUE}正在初始化默认配置...${PLAIN}"
+                    cat > "$JAIL_CONF" << EOF
+[DEFAULT]
+ignoreip = 127.0.0.1/8
+bantime = 86400
+findtime = 3600
+maxretry = 3
+banaction = iptables-multiport
+backend = systemd
+bantime.increment = true
+bantime.factor = 3
+bantime.maxtime = -1
+
+[sshd]
+enabled = true
+port = 22
+filter = sshd
+logpath = ${LOG_PATH}
+maxretry = 3
+bantime = 86400
+findtime = 3600
+EOF
+                fi
+                
+                systemctl enable --now fail2ban
+                echo -e "${GREEN}安装并启动完成！${PLAIN}"
+                sleep 2
+            else
+                echo -e "${RED}已取消安装。${PLAIN}"
+                return
+            fi
+        fi
+        
+        if [ ! -f "$JAIL_CONF" ]; then
+            echo -e "${YELLOW}警告: 未找到 $JAIL_CONF${PLAIN}"
+            cp /etc/fail2ban/jail.conf "$JAIL_CONF"
+        fi
+    }
+
+    # --- 核心配置函数（修复版） ---
+    get_conf() {
+        local key=$1
+        awk -v section="[${TARGET_JAIL}]" -v k="$key" '
+            $0 == section { in_section=1; next }
+            in_section && /^\[/ { exit }
+            in_section && $1 == k { print $3; exit }
+        ' "$JAIL_CONF" | tr -d ' ' || true
+    }
+
+    set_conf() {
+        local key=$1
+        local val=$2
+        awk -v section="[${TARGET_JAIL}]" -v k="$key" -v v="$val" '
+            $0 == section { in_section=1; print; next }
+            in_section && /^\[/ { print k " = " v; print; in_section=0; next }
+            in_section && $1 == k { next }
+            1
+        ' "$JAIL_CONF" > "${JAIL_CONF}.tmp" && mv -f "${JAIL_CONF}.tmp" "$JAIL_CONF"
+    }
+
+    # 稳定重启函数
+    restart_f2b() {
+        echo -e "${BLUE}正在重载 Fail2ban 配置...${PLAIN}"
+        systemctl daemon-reload
+        systemctl restart fail2ban
+        
+        for i in {1..5}; do
+            if fail2ban-client ping >/dev/null 2>&1; then
+                echo -e "${GREEN}成功！配置已生效。${PLAIN}"
+                read -n 1 -s -r -p "按任意键继续..."
+                return 0
+            fi
+            sleep 1
+        done
+
+        echo -e "${RED}Fail2ban 重启超时或失败。${PLAIN}"
+        echo -e "${YELLOW}请手动运行 'systemctl status fail2ban' 排查错误。${PLAIN}"
+        read -n 1 -s -r -p "按任意键继续..."
+    }
+
+    # 获取服务状态
+    get_status() {
+        if fail2ban-client ping >/dev/null 2>&1; then
+            local count=$(fail2ban-client status "$TARGET_JAIL" 2>/dev/null | grep "Currently banned" | grep -o "[0-9]*" || echo 0)
+            echo -e "${GREEN}运行中 (Active)${PLAIN} | 当前封禁数: ${RED}${count}${PLAIN}"
+        else
+            echo -e "${RED}已停止 (Stopped)${PLAIN}"
+        fi
+    }
+
+    # 格式化输出
+    fmt_unit() {
+        local val=$1; local type=$2
+        if [[ "$val" =~ ^[0-9]+$ ]]; then
+            if [ "$type" == "time" ]; then echo "${val}秒"
+            elif [ "$type" == "factor" ]; then echo "${val}倍"
+            else echo "$val"
+            fi
+        elif [ "$val" = "-1" ]; then
+            echo "永久"
+        else
+            echo "$val"
+        fi
+    }
+
+    # 校验规则
+    validate_time() { [[ "$1" =~ ^-?[0-9]+[smhdw]?$ ]]; }
+    validate_int() { [[ "$1" =~ ^-?[0-9]+$ ]]; }
+
+    # --- 功能模块 ---
+    change_param() {
+        local name=$1; local key=$2; local type=$3
+        local current=$(get_conf "$key")
+        echo -e "\n${BLUE}正在修改: ${name}${PLAIN}"
+        echo -e "当前值: ${GREEN}$(fmt_unit "$current" "$type")${PLAIN}"
+        [ "$type" == "time" ] && echo -e "${GRAY}(支持后缀: s=秒, m=分, h=小时, d=天，-1=永久)${PLAIN}"
+        
+        while true; do
+            read -p "请输入新值 (留空取消): " new_val
+            [ -z "$new_val" ] && return
+            if [ "$type" == "time" ] && validate_time "$new_val"; then break; fi
+            if [ "$type" == "int" ] && validate_int "$new_val"; then break; fi
+            if [ "$type" == "factor" ] && validate_int "$new_val"; then break; fi
+            echo -e "${RED}格式错误，请重试。${PLAIN}"
+        done
+        
+        set_conf "$key" "$new_val"
+        restart_f2b
+    }
+
+    # 服务开关
+    toggle_service() {
+        echo -e "\n${BLUE}--- 服务开关 ---${PLAIN}"
+        if fail2ban-client ping >/dev/null 2>&1; then
+            read -p "是否停止并禁用 Fail2ban? (y/n): " confirm
+            [[ "$confirm" == "y" ]] && {
+                systemctl disable --now fail2ban
+                echo -e "${RED}服务已停止。${PLAIN}"
+            }
+        else
+            read -p "是否启用并启动 Fail2ban? (y/n): " confirm
+            [[ "$confirm" == "y" ]] && {
+                echo -e "${BLUE}正在启动服务...${PLAIN}"
+                systemctl enable --now fail2ban
+                sleep 1
+                if fail2ban-client ping >/dev/null 2>&1; then
+                    echo -e "${GREEN}服务已启动。${PLAIN}"
+                else
+                    echo -e "${RED}启动失败！${PLAIN}"
+                fi
+            }
+        fi
+        read -n 1 -s -r -p "按任意键继续..."
+    }
+
+    # 解封IP
+    unban_ip() {
+        echo -e "\n${BLUE}--- 手动解封 IP ---${PLAIN}"
+        local banned_list=$(fail2ban-client status "$TARGET_JAIL" 2>/dev/null | grep "Banned IP list" | cut -d: -f2 | sed 's/^ //g')
+        [ -z "$banned_list" ] && banned_list="无"
+
+        echo -e "当前被封禁列表: ${RED}${banned_list}${PLAIN}"
+        read -p "输入要解封的 IP (留空取消): " target_ip
+        [ -z "$target_ip" ] && return
+        
+        fail2ban-client set "$TARGET_JAIL" unbanip "$target_ip"
+        [ $? -eq 0 ] && echo -e "${GREEN}解封成功: $target_ip${PLAIN}" || echo -e "${RED}操作失败。${PLAIN}"
+        read -n 1 -s -r -p "按任意键继续..."
+    }
+
+    # 白名单管理
+    add_whitelist() {
+        echo -e "\n${BLUE}--- 白名单管理 ---${PLAIN}"
+        local current_list=$(get_conf "ignoreip")
+        local current_ip=$(echo $SSH_CLIENT | awk '{print $1}')
+        
+        echo -e "当前白名单: ${YELLOW}${current_list:-无}${PLAIN}"
+        read -p "输入要放行的 IP (回车默认本机 ${current_ip}): " input_ip
+        [ -z "$input_ip" ] && input_ip="$current_ip"
+        [ -z "$input_ip" ] && { echo -e "${RED}无法获取 IP。${PLAIN}"; return; }
+        
+        if echo "$current_list" | grep -qw "$input_ip"; then
+            echo -e "${YELLOW}该 IP 已在白名单中。${PLAIN}"
+        else
+            new_list="${current_list} ${input_ip}"
+            set_conf "ignoreip" "${new_list# }"
+            restart_f2b
+        fi
+        read -n 1 -s -r -p "按任意键继续..."
+    }
+
+    # 查看日志
+    view_logs() {
+        clear
+        echo -e "${BLUE}=== 封禁审计日志 (最近 20 条) ===${PLAIN}"
+        if [ ! -f "$LOG_FILE" ]; then
+            echo -e "${YELLOW}日志文件不存在${PLAIN}"
+        else
+            grep -E "(Ban|Unban)" "$LOG_FILE" 2>/dev/null | tail -n 20 | awk '
+            {
+                gsub(/Unban/, "\033[32m&\033[0m");
+                gsub(/Ban/, "\033[31m&\033[0m");
+                print
+            }'
+        fi
+        echo -e "----------------------------------------"
+        read -n 1 -s -r -p "按任意键返回..."
+    }
+
+    # 指数封禁子菜单
+    menu_exponential() {
+        while true; do
+            clear
+            local inc=$(get_conf "bantime.increment")
+            local fac=$(get_conf "bantime.factor")
+            local max=$(get_conf "bantime.maxtime")
+            [ "$inc" == "true" ] && S_INC="${GREEN}开启${PLAIN}" || S_INC="${RED}关闭${PLAIN}"
+
+            echo -e "${BLUE}=== 高级: 指数封禁设置 ===${PLAIN}"
+            echo -e "规则：1次→1天，2次→3天，3次→永久"
+            echo -e "-------------------------------------------"
+            echo -e "  1. 递增模式开关   [${S_INC}]"
+            echo -e "  2. 增长系数       [${YELLOW}${fac:-未设置}${PLAIN}] $(fmt_unit "${fac}" "factor")"
+            echo -e "  3. 封禁上限       [${YELLOW}${max:-未设置}${PLAIN}] $(fmt_unit "${max}" "time")"
+            echo -e "-------------------------------------------"
+            echo -e "  0. 返回主菜单"
+            read -p "请选择 [0-3]: " sc
+            case "$sc" in
+                1) [ "$inc" == "true" ] && ns="false" || ns="true"; set_conf "bantime.increment" "$ns"; restart_f2b ;;
+                2) change_param "增长系数" "bantime.factor" "factor" ;;
+                3) change_param "封禁上限" "bantime.maxtime" "time" ;;
+                0) return ;;
+            esac
+        done
+    }
+
+    # Fail2ban 主菜单
+    menu_f2b_main() {
+        check_install
+        while true; do
+            clear
+            VAL_MAX=$(get_conf "maxretry")
+            VAL_BAN=$(get_conf "bantime")
+            VAL_FIND=$(get_conf "findtime")
+            
+            echo -e "${BLUE}################################################${PLAIN}"
+            echo -e "${BLUE}#    Fail2ban 定制面板: 1天→3天→永久封禁    #${PLAIN}"
+            echo -e "${BLUE}################################################${PLAIN}"
+            echo -e "  状态: $(get_status)"
+            echo -e "------------------------------------------------"
+            echo -e "  1. 最大重试次数     [${YELLOW}${VAL_MAX}${PLAIN}]"
+            echo -e "  2. 初始封禁时长     [${YELLOW}${VAL_BAN}${PLAIN}] $(fmt_unit "${VAL_BAN}" "time")"
+            echo -e "  3. 监测时间窗口     [${YELLOW}${VAL_FIND}${PLAIN}] $(fmt_unit "${VAL_FIND}" "time")"
+            echo -e "------------------------------------------------"
+            echo -e "  4. 手动解封 IP"
+            echo -e "  5. 添加IP白名单"
+            echo -e "  6. 查看封禁日志"
+            echo -e "  7. 指数封禁高级设置"
+            echo -e "------------------------------------------------"
+            echo -e "  8. 服务开关控制"
+            echo -e "  0. 返回上级菜单"
+            echo -e ""
+            read -p "请选择功能 [0-8]: " choice
+
+            case "$choice" in
+                1) change_param "最大重试次数" "maxretry" "int" ;;
+                2) change_param "初始封禁时长" "bantime"  "time" ;;
+                3) change_param "监测时间窗口" "findtime" "time" ;;
+                4) unban_ip ;;
+                5) add_whitelist ;;
+                6) view_logs ;;
+                7) menu_exponential ;;
+                8) toggle_service ;;
+                0) main_menu ;;
+                *) echo -e "${RED}输入错误，请重新选择${PLAIN}"; sleep 1 ;;
+            esac
+        done
+    }
+
+    # 启动 Fail2ban 菜单
+    menu_f2b_main
+}
+
+# ====================== 2. IP优先级管理模块 ======================
+run_ip_manager() {
+    # 必须root
+    if [ "$(id -u)" -ne 0 ]; then
+        echo -e "${RED}请用 sudo 运行！${NC}"
+        sleep 2
+        main_menu
+        exit 1
+    fi
+
+    GAI_FILE="/etc/gai.conf"
+    BACKUP_FILE="/etc/gai.conf.bak.default"
+
+    # 获取IP
+    CURRENT_IPV4=$(curl -s -4 ip.sb 2>/dev/null)
+    CURRENT_IPV6=$(curl -s -6 ip.sb 2>/dev/null)
+
+    # 判断当前优先使用的IP
+    USED_IP=$(curl -w "%{remote_ip}" -s -o /dev/null "https://www.cloudflare.com")
+    IS_V6=false
+    if [[ "$USED_IP" == *":"* ]]; then
+        IS_V6=true
+    fi
+
+    # ====================== 显示 IP（直接在后面标注优先） ======================
+    clear
+    echo -e "${BLUE}====================================================${NC}"
+    echo -e "${PURPLE}              当前公网 IP 信息${NC}"
+    echo -e "${BLUE}====================================================${NC}"
+
+    echo -n -e "${GREEN}IPv4：${NC}$CURRENT_IPV4"
+    if [ "$IS_V6" = false ]; then
+        echo -e " ${YELLOW}[优先]${NC}"
+    else
+        echo ""
+    fi
+
+    echo -n -e "${GREEN}IPv6：${NC}"
+    if [ -z "$CURRENT_IPV6" ]; then
+        echo -n "无IPv6网络"
+    else
+        echo -n "$CURRENT_IPV6"
+    fi
+    if [ "$IS_V6" = true ]; then
+        echo -e " ${YELLOW}[优先]${NC}"
+    else
+        echo ""
+    fi
+
+    echo -e "${BLUE}====================================================${NC}"
+    echo ""
+
+    # ====================== 切换菜单 ======================
+    echo -e "${YELLOW}1) IPv4 优先${NC}"
+    echo -e "${YELLOW}2) IPv6 优先${NC}"
+    echo -e "${YELLOW}3) 恢复系统默认配置${NC}"
+    echo -e "${YELLOW}0) 返回上级菜单${NC}"
+    echo -n "请选择 [0-3]："
+    read CHOICE
+
+    # 备份
+    backup_config() {
+        [ ! -f "$BACKUP_FILE" ] && cp "$GAI_FILE" "$BACKUP_FILE"
+    }
+
+    # IPv4 优先
+    set_ipv4() {
+        backup_config
+        sed -i 's/^precedence ::ffff:0:0\/96  10/#precedence ::ffff:0:0\/96  10/g' "$GAI_FILE"
+        sed -i 's/^precedence 2000::\/3    10/#precedence 2000::\/3    10/g' "$GAI_FILE"
+        sed -i '/precedence ::ffff:0:0\/96  100/d' "$GAI_FILE"
+        echo "precedence ::ffff:0:0/96  100" >> "$GAI_FILE"
+        echo -e "${GREEN}✅ 已切换：IPv4 优先${NC}"
+    }
+
+    # IPv6 优先
+    set_ipv6() {
+        backup_config
+        sed -i '/precedence ::ffff:0:0\/96  100/d' "$GAI_FILE"
+        sed -i 's/^#precedence ::ffff:0:0\/96  10/precedence ::ffff:0:0\/96  10/g' "$GAI_FILE"
+        sed -i 's/^#precedence 2000::\/3    10/precedence 2000::\/3    10/g' "$GAI_FILE"
+        echo -e "${GREEN}✅ 已切换：IPv6 优先${NC}"
+    }
+
+    # 恢复默认
+    restore_default() {
+        [ -f "$BACKUP_FILE" ] && cp "$BACKUP_FILE" "$GAI_FILE"
+        echo -e "${GREEN}✅ 已恢复系统默认配置${NC}"
+    }
+
+    case $CHOICE in
+        1) set_ipv4 ;;
+        2) set_ipv6 ;;
+        3) restore_default ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ 无效选项${NC}" && sleep 2 && run_ip_manager ;;
+    esac
+
+    echo -e "${BLUE}👉 配置立即生效，无需重启！${NC}"
+    sleep 3
+    main_menu
+}
+
+# ====================== 启动脚本 ======================
+# 检查root权限（全局）
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e "${RED}请使用 root 权限运行此脚本（sudo）！${NC}"
+    exit 1
+fi
+
+# 启动主菜单
+main_menu
