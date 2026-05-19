@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # ==============================================================================
-# Fail2ban 一键管理面板 - 优化增强版
+# Fail2ban  
 # 添加执行权限 chmod +x f2b-panel.sh
+# 规则：第一次1天，第二次3天，第三次永久封禁
 # ==============================================================================
 
 # --- 全局变量 ---
@@ -49,25 +50,28 @@ check_install() {
             [ ! -f "$LOG_PATH" ] && touch "$LOG_PATH"
             systemctl enable --now rsyslog
             
-            # 初始化标准配置
+            # 初始化配置：第一次1天，第二次3天，第三次永久
             if [ ! -f "$JAIL_CONF" ]; then
-                echo -e "${BLUE}正在初始化默认配置 (jail.local)...${PLAIN}"
+                echo -e "${BLUE}正在初始化默认配置...${PLAIN}"
                 cat > "$JAIL_CONF" << EOF
 [DEFAULT]
 ignoreip = 127.0.0.1/8
-bantime = 600
+bantime = 86400
 findtime = 3600
-maxretry = 5
+maxretry = 3
 banaction = iptables-multiport
 backend = systemd
+bantime.increment = true
+bantime.factor = 3
+bantime.maxtime = -1
 
 [sshd]
 enabled = true
 port = 22
 filter = sshd
 logpath = ${LOG_PATH}
-maxretry = 5
-bantime = 600
+maxretry = 3
+bantime = 86400
 findtime = 3600
 EOF
             fi
@@ -81,7 +85,6 @@ EOF
         fi
     fi
     
-    # 配置文件兜底
     if [ ! -f "$JAIL_CONF" ]; then
         echo -e "${YELLOW}警告: 未找到 $JAIL_CONF${PLAIN}"
         cp /etc/fail2ban/jail.conf "$JAIL_CONF"
@@ -147,14 +150,16 @@ fmt_unit() {
         elif [ "$type" == "factor" ]; then echo "${val}倍"
         else echo "$val"
         fi
+    elif [ "$val" = "-1" ]; then
+        echo "永久"
     else
         echo "$val"
     fi
 }
 
 # 校验规则
-validate_time() { [[ "$1" =~ ^[0-9]+[smhdw]?$ ]]; }
-validate_int() { [[ "$1" =~ ^[0-9]+$ ]]; }
+validate_time() { [[ "$1" =~ ^-?[0-9]+[smhdw]?$ ]]; }
+validate_int() { [[ "$1" =~ ^-?[0-9]+$ ]]; }
 
 # --- 功能模块 ---
 change_param() {
@@ -162,7 +167,7 @@ change_param() {
     local current=$(get_conf "$key")
     echo -e "\n${BLUE}正在修改: ${name}${PLAIN}"
     echo -e "当前值: ${GREEN}$(fmt_unit "$current" "$type")${PLAIN}"
-    [ "$type" == "time" ] && echo -e "${GRAY}(支持后缀: s=秒, m=分, h=小时, d=天)${PLAIN}"
+    [ "$type" == "time" ] && echo -e "${GRAY}(支持后缀: s=秒, m=分, h=小时, d=天，-1=永久)${PLAIN}"
     
     while true; do
         read -p "请输入新值 (留空取消): " new_val
@@ -217,7 +222,7 @@ unban_ip() {
     read -n 1 -s -r -p "按任意键继续..."
 }
 
-# 白名单管理（修复版）
+# 白名单管理
 add_whitelist() {
     echo -e "\n${BLUE}--- 白名单管理 ---${PLAIN}"
     local current_list=$(get_conf "ignoreip")
@@ -266,7 +271,7 @@ menu_exponential() {
         [ "$inc" == "true" ] && S_INC="${GREEN}开启${PLAIN}" || S_INC="${RED}关闭${PLAIN}"
 
         echo -e "${BLUE}=== 高级: 指数封禁设置 ===${PLAIN}"
-        echo -e "重复违规IP封禁时间成倍增长"
+        echo -e "规则：1次→1天，2次→3天，3次→永久"
         echo -e "-------------------------------------------"
         echo -e "  1. 递增模式开关   [${S_INC}]"
         echo -e "  2. 增长系数       [${YELLOW}${fac:-未设置}${PLAIN}] $(fmt_unit "${fac}" "factor")"
@@ -293,7 +298,7 @@ menu_main() {
         VAL_FIND=$(get_conf "findtime")
         
         echo -e "${BLUE}################################################${PLAIN}"
-        echo -e "${BLUE}#            Fail2ban 管理面板 (v2.0)          #${PLAIN}"
+        echo -e "${BLUE}#    Fail2ban 定制面板: 1天→3天→永久封禁    #${PLAIN}"
         echo -e "${BLUE}################################################${PLAIN}"
         echo -e "  状态: $(get_status)"
         echo -e "------------------------------------------------"
