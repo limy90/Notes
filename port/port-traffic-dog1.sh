@@ -2399,7 +2399,7 @@ download_with_sources() {
 # 下载通知模块
 download_notification_modules() {
     local notifications_dir="$CONFIG_DIR/notifications"
-    local telegram_url="https://raw.githubusercontent.com/limy90/Notes/refs/heads/main/port/tgtz1.sh"
+    local telegram_url="https://raw.githubusercontent.com/limy90/Notes/refs/heads/main/port/telegram.sh"
 
     mkdir -p "$notifications_dir"
 	
