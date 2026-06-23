@@ -2399,21 +2399,20 @@ download_with_sources() {
 # 下载通知模块
 download_notification_modules() {
     local notifications_dir="$CONFIG_DIR/notifications"
-    local temp_dir=$(mktemp -d)
-    local repo_url="https://github.com/zywe03/realm-xwPF/archive/refs/heads/main.zip"
+    local telegram_url="https://raw.githubusercontent.com/limy90/Notes/refs/heads/main/port/tgtz1.sh"
 
-    # 下载解压复制清理：每次都覆盖更新确保版本一致
-    if download_with_sources "$repo_url" "$temp_dir/repo.zip" &&
-       (cd "$temp_dir" && unzip -q repo.zip) &&
-       rm -rf "$notifications_dir" &&
-       cp -r "$temp_dir/realm-xwPF-main/notifications" "$notifications_dir" &&
-       chmod +x "$notifications_dir"/*.sh; then
-        rm -rf "$temp_dir"
-        return 0
-    else
-        rm -rf "$temp_dir"
-        return 1
+    mkdir -p "$notifications_dir"
+	
+    if curl -sL --connect-timeout $SHORT_CONNECT_TIMEOUT --max-time $SHORT_MAX_TIMEOUT \
+        "$telegram_url" -o "$notifications_dir/telegram.sh" 2>/dev/null; then
+        
+        if [ -s "$notifications_dir/telegram.sh" ]; then
+            chmod +x "$notifications_dir/telegram.sh"
+            return 0
+        fi
     fi
+    
+    return 1
 }
 
 # 安装(更新)脚本
