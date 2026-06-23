@@ -23,12 +23,9 @@ EOF
 ```
 ### 临时关闭ipv6   重启恢复
 ``` 
-sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sysctl -w net.ipv6.conf.all.disable_ipv6=1 && sysctl -w net.ipv6.conf.default.disable_ipv6=1
 ```
 ### 永久禁用ipv6
 ```
-sudo vim /etc/sysctl.conf
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-sudo sysctl -p
+bash -c 'echo -e "net.ipv6.conf.all.disable_ipv6=1\nnet.ipv6.conf.default.disable_ipv6=1\nnet.ipv6.conf.lo.disable_ipv6=1" > /etc/sysctl.d/99-disable-ipv6.conf && sysctl -p /etc/sysctl.d/99-disable-ipv6.conf'
 ```
