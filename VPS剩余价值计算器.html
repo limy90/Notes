@@ -423,9 +423,13 @@ function calculate(sourceInput = null) {
         actual = cny + prem;
         DOM.actualPaid.value = fmt(actual);
     } else {
-        actual = parseFloat(DOM.actualPaid.value) || cny;
-        prem = actual - cny;
+    actual = parseFloat(DOM.actualPaid.value) || cny;
+    prem = actual - cny;
+    // 新增：同步更新溢价输入框
+    if (DOM.actualPaid.value) {
+        DOM.premiumInput.value = fmt(prem);
     }
+}
 
     const finalTotal = cny + prem;
     DOM.resCNYBig.innerText = `¥ ${fmt(finalTotal)}`;
@@ -437,7 +441,7 @@ function calculate(sourceInput = null) {
     DOM.dayOfficial.innerText = `¥${fmt(cny / rem, 2)}`;
     DOM.dayActual.innerText = `¥${fmt((cny + prem) / rem, 2)}`;
 
-    if (Math.abs(prem) < 0.01) {
+    if (Math.abs(prem) < 0.005) {
         DOM.premiumBox.classList.add('hidden');
         DOM.valueRatioBox.classList.add('hidden');
     } else {
@@ -485,7 +489,8 @@ window.onload = () => {
     fetchRealRates();
     const today = new Date();
     DOM.tradeDate.value = today.toISOString().split('T')[0];
-    const expDay = new Date(today); expDay.setDate(today.getDate() + 150);
+    const expDay = new Date(today); 
+    expDay.setDate(today.getDate() + 150);
     DOM.expiryDate.value = expDay.toISOString().split('T')[0];
     DOM.premiumInput.value = '';
     DOM.actualPaid.value = '';
@@ -499,8 +504,11 @@ window.onload = () => {
         };
     });
 
-    const inputIds = ['premiumInput', 'actualPaid', 'renewalAmount', 'tradeDate', 'expiryDate', 'useCustomRate', 'customRateInput'];
-    inputIds.forEach(id => {
+    // 修改：checkbox 使用 change 事件
+    DOM.useCustomRate.addEventListener('change', () => calculate());
+    
+    // 其他输入框使用 input 事件
+    ['premiumInput', 'actualPaid', 'renewalAmount', 'tradeDate', 'expiryDate', 'customRateInput'].forEach(id => {
         document.getElementById(id).addEventListener('input', () => debounceCalculate(id));
     });
 
