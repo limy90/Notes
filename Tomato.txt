@@ -1,22 +1,72 @@
-||p6-ad-sign.byteimg.com^
-||p9-ad-sign.byteimg.com^
-||i.snssdk.com^
-||i-lq.snssdk.com^
-||is.snssdk.com^
-||mcs.snssdk.com^
-||tnc3-alisc1.snssdk.com^
-||tnc3-aliec2.snssdk.com^
-||security-lq.snssdk.com^
-||dig.bdurl.net^
 ||activity-ag.awemeughun.com^
 ||v6-novelapp.ixigua.com^
 ||msync-im1-vip6-std.easemob.com^
 ||apd-pcdnwxlogin.teg.tencent-cloud.net^
 ||api.iegadp.qq.com^
-||sf3-ttcdn-tos.pstatp.com^
 ||novelapp.ixigua.com^
 ||default.ixigua.com^
-||pglstatp-toutiao.com^
-||byteorge.com^
-||pangolin-sdk-toutiao.com^
-||gurd.snssdk.com^
+||*static*^
+||*sealaly*^
+||*toutiao*^
+||*bsgslb*^
+||*misc*^
+||*douyin*^
+||*ecombd*^
+||*byte*^
+||*0kkkkkt*^
+||*cjjd14*^
+||*ietheivaicai*^
+||*stream*^
+||*siomxity*^
+/[a-zA-Z0-9.-]*-normal\.zijieapi\.com/
+||mssdk.zijieapi.com^
+||lf3-reading.fqnovelpic.com^
+||*applog*.*.*^
+||feedback-c.zijieapi.com^
+||ads*-normal-*.zijieapi.com^
+||*pstatp*^
+||dig.bdurl.net^
+||*qtaeixd*^
+||*erer*^
+||*ttweb*^
+||*sinfonlinec*^
+||mssdk.volces.com^
+||toblog.ctobsnssdk.com^
+||mon.zijieapi.com^
+||dig.zjurl.cn^
+||gecko*.zijieapi.com^
+||polaris.zijieapi.com^
+||snssdk.com^
+
+! 尝试修复新添加在阅读界面的短剧
+
+||bsync3-normal-hl.zijieapi.com^
+
+! 我的消息显示
+@@||reading.snssdk.com^
+@@||lf-fe.fqnovelstatic.com^
+
+! 完整排行榜
+@@||lf-normal-gr-sourcecdn.bytegecko.com^
+
+! 首页误拦截
+@@||api*-sinfnormal.fqnovel.com^
+@@||api5-normal-sinfonlinec.fqnovel.com/reading/bookapi/
+@@||api*-normal-sinfonline*.fqnovel.com/reading/bookapi/
+
+! 小说评论区屏蔽
+! @@||tnc*-*.zijieapi.com^
+
+! 抖音账号登录
+@@||security.snssdk.com^
+
+! 金币福利页面
+@@||lf-sourcecdn-tos.bytegecko.com^
+
+! 漫画修复
+@@||p3-novel1-sign.byteimg.com^
+@@||p6-novel1-sign.byteimg.com^
+@@||p9-novel1-sign.byteimg.com^
+
+! 出版读物插图修复
+@@||p*-novel-sign.byteimg.com/novel-pic/
