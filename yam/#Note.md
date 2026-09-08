@@ -7,6 +7,7 @@
 - [虚空终端 Docs](https://wiki.metacubex.one/config/rules/)
 - [海豚测速 - 网络代理工具箱](https://www.haitunt.org/app.html)
 - [CDN查询](https://www.cdnplanet.com/tools/cdnfinder)
+- [fake-ip + DNS 分流 + no-resolve](https://blog.daimona.cn/posts/mihomo-fakeip-dns/#%E5%BC%80%E5%90%AF-fake-ip-%E6%A8%A1%E5%BC%8F)
 - [RTT测试网址](https://www.calmxin.com/archives/clash-testlink.html)
 - [geoip.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat)
 [geosite.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat)
