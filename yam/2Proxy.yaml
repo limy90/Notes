@@ -18,7 +18,6 @@ payload:
   - DOMAIN-SUFFIX,ippure.com
   - DOMAIN-SUFFIX,iplark.com
   - DOMAIN-SUFFIX,linux.do
-  - IP-ASN,136907
   
 # NAME: Binance
   - DOMAIN-SUFFIX,binance.cc
