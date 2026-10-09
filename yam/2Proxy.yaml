@@ -17,6 +17,7 @@ payload:
   - DOMAIN-SUFFIX,xsijishe.net
   - DOMAIN-SUFFIX,ippure.com
   - DOMAIN-SUFFIX,iplark.com
+  - DOMAIN-SUFFIX,linux.do
   
 # NAME: Binance
   - DOMAIN-SUFFIX,binance.cc
