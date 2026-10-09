@@ -15,7 +15,7 @@ payload:
   - PROCESS-NAME,mstsc.exe
   - PROCESS-NAME,cs2.exe
   - PROCESS-NAME,XTerminal.exe
-  - IP-CIDR,190.92.230.222/32,no-resolve
+  #- IP-CIDR,190.92.230.222/32,no-resolve
   - PROCESS-NAME,ugraf.exe
   
   - DOMAIN-SUFFIX,wechat.com
