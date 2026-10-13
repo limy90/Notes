@@ -18,7 +18,8 @@ payload:
   - DOMAIN-SUFFIX,ippure.com
   - DOMAIN-SUFFIX,iplark.com
   - DOMAIN-SUFFIX,linux.do
-  
+  - DOMAIN-SUFFIX,muyuan.do
+  - PROCESS-NAME,Cherry Studio.exe  
 # NAME: Binance
   - DOMAIN-SUFFIX,binance.cc
   - DOMAIN-SUFFIX,binance.cloud
