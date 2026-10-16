@@ -19,7 +19,7 @@ hostnamectl set-hostname name
 { cat <<'EOF'
 PS1="\[\033]2;\h:\u\w\007\033[33;1m\]\u\[\033[0m\]\[\033[36;1m\]@\h\[\033[0m\]\[\033[35;1m\] \w\[\033[0m\]\[\033[32;1m\] \$([ \$EUID -eq 0 ] && echo '#' || echo '$') \[\033[0m\]"
 EOF
-} >> ~/.bashrc && source ~/.bashrc && timedatectl set-timezone Asia/Shanghai
+} >> ~/.bashrc && source ~/.bashrc && timedatectl set-timezone Asia/Singapore
 ```
 ### 临时关闭ipv6   重启恢复
 ``` 
