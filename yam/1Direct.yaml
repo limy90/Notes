@@ -11,6 +11,7 @@ payload:
   - DOMAIN,staticsns.cdn.bcebos.com
   - DOMAIN-SUFFIX,doubao.com
   - DOMAIN-SUFFIX,1688.com
+  - DOMAIN-SUFFIX,leyz.top
   - DOMAIN-KEYWORD,zhihu
   - PROCESS-NAME,mstsc.exe
   - PROCESS-NAME,cs2.exe
