@@ -20,6 +20,7 @@ payload:
   - DOMAIN-SUFFIX,linux.do
   - DOMAIN-SUFFIX,muyuan.do
   - PROCESS-NAME,Cherry Studio.exe  
+  - DOMAIN-SUFFIX,zorocloud.com
 # NAME: Binance
   - DOMAIN-SUFFIX,binance.cc
   - DOMAIN-SUFFIX,binance.cloud
