@@ -6,6 +6,7 @@ payload:
   - DOMAIN-SUFFIX,adobegenuine.com
   - DOMAIN-KEYWORD,mcdn.bilivideo.cn
   - DOMAIN-KEYWORD,updates.ghub.logitechg.com
+  - PROCESS-NAME,CLO_Standalone_OnlineAuth_x64.exe
 
   # ===== 1. 字节系基础广告规则 =====
   - DOMAIN,p6-ad-sign.byteimg.com
