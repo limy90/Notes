@@ -17,7 +17,8 @@ payload:
   - PROCESS-NAME,cs2.exe
   - PROCESS-NAME,XTerminal.exe
   - PROCESS-NAME,AliMail.exe
-    
+  - DOMAIN,updates.cdn-apple.com
+  
   #- IP-CIDR,190.92.230.222/32,no-resolve
   - PROCESS-NAME,ugraf.exe
   - IP-ASN,136907 
